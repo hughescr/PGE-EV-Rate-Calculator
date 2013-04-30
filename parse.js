@@ -259,18 +259,18 @@ var parser = new xml.SaxParser(function(cb) {
         if(currentStart.getOrdinalNumber() != currentDay)
         {
             currentDay = currentStart.getOrdinalNumber();
-            var extraJuice = argv.m * argv.c;
+            var extraJuice = argv.m * argv.c / 1000;
 
             currentMonthJuice += extraJuice;
 
             time = currentStart.clone().clearTime();
 
             e9Rate = convertToRate( time, e9 );
-            e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * currentValue;
+            e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * extraJuice;
             e9Total += e9Cost;
 
             evRate = convertToRate( time, ev );
-            evCost = convertToPrice(ev, evRate, currentMonthJuice) * currentValue;
+            evCost = convertToPrice(ev, evRate, currentMonthJuice) * extraJuice;
             evTotal += evCost;
         }
 
