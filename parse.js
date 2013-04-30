@@ -5,7 +5,7 @@ process.env.TZ = 'America/Los_Angeles'
 var xml = require('node-xml');
 require('date-utils');
 var argv = require('optimist')
-    .usage('Usage: $0 <filename> [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>]')
+    .usage('Usage: $0 [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
     .demand(1)
     .default('b', 'T')
     .alias('b','baseline-territory')
