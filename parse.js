@@ -18,6 +18,7 @@ var argv = require('optimist')
     .describe('c','How many Wh per mile do you get')
     .argv
 
+var numDays = 0;
 var currentDay = 0;
 var currentMonth = 0;
 var currentMonthJuice = 0;
@@ -241,6 +242,7 @@ var parser = new xml.SaxParser(function(cb) {
         console.log("Summer E9: "+(Math.round(e9Season['Summer']*100)/100)+"\tSummer EV: "+(Math.round(evSeason['Summer']*100)/100)+"\t "+(Math.round((evSeason['Summer']/e9Season['Summer'])*10000)/100)+"%");
         console.log("Winter E9: "+(Math.round(e9Season['Winter']*100)/100)+"\tWinter EV: "+(Math.round(evSeason['Winter']*100)/100)+"\t "+(Math.round((evSeason['Winter']/e9Season['Winter'])*10000)/100)+"%");
         console.log("Total E9: "+(Math.round(e9Total*100)/100)+"\tTotal EV: "+(Math.round(evTotal*100)/100)+"\t "+(Math.round((evTotal/e9Total)*10000)/100)+"%");
+        console.log("E9 per day: "+(Math.round(e9Total/numDays*100)/100)+"\tEV per day: "+(Math.round(evTotal/numDays*100)/100))
   });
   cb.onStartElementNS(function(elem, attrs, prefix, uri, namespaces) {
       if(elem == "duration") {
@@ -269,6 +271,7 @@ var parser = new xml.SaxParser(function(cb) {
         // At start of every day, add off-peak car charging
         if(currentStart.getOrdinalNumber() != currentDay)
         {
+            numDays++;
             currentDay = currentStart.getOrdinalNumber();
             var extraJuice = argv.m * argv.c / 1000;
 
