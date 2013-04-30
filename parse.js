@@ -5,10 +5,8 @@ process.env.TZ = 'America/Los_Angeles'
 var xml = require('node-xml');
 require('date-utils');
 var argv = require('optimist')
-    .usage('Usage: $0 -f <filename> [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>]')
-    .demand('f')
-    .alias('f','file')
-    .describe('f','File to parse')
+    .usage('Usage: $0 <filename> [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>]')
+    .demand(1)
     .default('b', 'T')
     .alias('b','baseline-territory')
     .describe('b',"Baseline territory ['P'..'Z'] from http://www.pge.com/tariffs/tm2/pdf/ELEC_PRELIM_A.pdf")
@@ -333,4 +331,4 @@ var parser = new xml.SaxParser(function(cb) {
 
 
 //example read from file
-parser.parseFile(argv.f);
+parser.parseFile(argv._[0]);
