@@ -39,6 +39,8 @@ Output will look something like:
 
     Total E9: 3620.82   Total EV: 2023.52
 
+Those numbers are basically the amount in dollars you would expect to have paid if you had been on the specified rate plan during the period covered by the data you downloaded.
+
 There are some optional flags that default to "My house in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile".  You can type
 
     ./parse.js
