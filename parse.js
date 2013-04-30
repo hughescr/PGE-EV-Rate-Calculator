@@ -138,8 +138,17 @@ var ev = {
 };
 
 
-e9Total = 0;
-evTotal = 0;
+var e9Total = 0;
+var evTotal = 0;
+
+var e9Season = {
+    'Summer': 0,
+    'Winter': 0,
+};
+var evSeason = {
+    'Summer': 0,
+    'Winter': 0,
+};
 
 function checkCalendarDate(some_date, start_date, end_date)
 {
@@ -229,7 +238,9 @@ var parser = new xml.SaxParser(function(cb) {
 
   });
   cb.onEndDocument(function() {
-        console.log("Total E9: "+(Math.round(e9Total*100)/100)+"\tTotal EV: "+(Math.round(evTotal*100)/100));
+        console.log("Summer E9: "+(Math.round(e9Season['Summer']*100)/100)+"\tSummer EV: "+(Math.round(evSeason['Summer']*100)/100)+"\t "+(Math.round((evSeason['Summer']/e9Season['Summer'])*10000)/100)+"%");
+        console.log("Winter E9: "+(Math.round(e9Season['Winter']*100)/100)+"\tWinter EV: "+(Math.round(evSeason['Winter']*100)/100)+"\t "+(Math.round((evSeason['Winter']/e9Season['Winter'])*10000)/100)+"%");
+        console.log("Total E9: "+(Math.round(e9Total*100)/100)+"\tTotal EV: "+(Math.round(evTotal*100)/100)+"\t "+(Math.round((evTotal/e9Total)*10000)/100)+"%");
   });
   cb.onStartElementNS(function(elem, attrs, prefix, uri, namespaces) {
       if(elem == "duration") {
@@ -268,10 +279,12 @@ var parser = new xml.SaxParser(function(cb) {
             e9Rate = convertToRate( time, e9 );
             e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * extraJuice;
             e9Total += e9Cost;
+            e9Season[e9Rate.split(' ')[0]] += e9Cost;
 
             evRate = convertToRate( time, ev );
             evCost = convertToPrice(ev, evRate, currentMonthJuice) * extraJuice;
             evTotal += evCost;
+            evSeason[evRate.split(' ')[0]] += evCost;
         }
 
         currentMonthJuice += currentValue;
@@ -279,10 +292,12 @@ var parser = new xml.SaxParser(function(cb) {
         e9Rate = convertToRate(currentStart, e9);
         e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * currentValue;
         e9Total += e9Cost;
+        e9Season[e9Rate.split(' ')[0]] += e9Cost;
 
         evRate = convertToRate(currentStart,ev);
         evCost = convertToPrice(ev, evRate, currentMonthJuice) * currentValue;
         evTotal += evCost;
+        evSeason[evRate.split(' ')[0]] += evCost;
     }
     else if(elem == "duration")
     {
