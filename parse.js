@@ -3,7 +3,10 @@
 process.env.TZ = 'America/Los_Angeles'
 
 var xml = require('node-xml');
+var util = require('util');
+var printf = require('printf');
 require('date-utils');
+
 var argv = require('optimist')
     .usage('Usage: $0 [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
     .demand(1)
@@ -495,11 +498,11 @@ var parser = new xml.SaxParser(function(cb) {
         for(var rate in totals)
         {
             data = totals[rate];
-            console.log("Rate: "+rate);
+            util.puts("Rate: "+rate);
             for(var period in data)
             {
                 sub_data = data[period];
-                console.log(period+"\tCost: "+Math.round(sub_data.cost*100)/100+"\t Per day: "+Math.round(100*sub_data.cost/sub_data.numDays)/100);
+                util.puts(period+"\tCost: $"+printf("%0.2f",sub_data.cost)+"\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays));
             }
         }
   });
@@ -604,10 +607,10 @@ var parser = new xml.SaxParser(function(cb) {
     }
   });
   cb.onWarning(function(msg) {
-      console.log('<WARNING>'+msg+"</WARNING>");
+      util.puts('<WARNING>'+msg+"</WARNING>");
   });
   cb.onError(function(msg) {
-      console.log('<ERROR>'+JSON.stringify(msg)+"</ERROR>");
+      util.puts('<ERROR>'+JSON.stringify(msg)+"</ERROR>");
   });
 });
 
