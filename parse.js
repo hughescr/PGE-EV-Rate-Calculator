@@ -16,6 +16,9 @@ var argv = require('optimist')
     .default('c', 350)
     .alias('c','Wh-per-mile')
     .describe('c','How many Wh per mile do you get')
+    .boolean('a')
+    .alias('a','all-electric')
+    .describe('a','Use the "all eletric" baseline numbers -- specify this option if your heating is electric instead of gas')
     .argv
 
 var numDays = 0;
@@ -49,16 +52,30 @@ var e9 = {
         {type: 'Winter Off Peak'}
     ],
     baselines: {
-        'P': { 'Summer': 15.3, 'Winter': 12.7 },
-        'Q': { 'Summer': 7.5,  'Winter': 11.7 },
-        'R': { 'Summer': 17.1, 'Winter': 11.7 },
-        'S': { 'Summer': 15.3, 'Winter': 12.0 },
-        'T': { 'Summer': 7.5,  'Winter': 9.1 },
-        'V': { 'Summer': 12.0, 'Winter': 13.6 },
-        'W': { 'Summer': 18.5, 'Winter': 10.9 },
-        'X': { 'Summer': 11.0, 'Winter': 11.7 },
-        'Y': { 'Summer': 11.7, 'Winter': 13.2 },
-        'Z': { 'Summer': 7.9,  'Winter': 10.6 },
+        code_b: {
+            'P': { 'Summer': 15.3, 'Winter': 12.7 },
+            'Q': { 'Summer': 7.5,  'Winter': 11.7 },
+            'R': { 'Summer': 17.1, 'Winter': 11.7 },
+            'S': { 'Summer': 15.3, 'Winter': 12.0 },
+            'T': { 'Summer': 7.5,  'Winter': 9.1 },
+            'V': { 'Summer': 12.0, 'Winter': 13.6 },
+            'W': { 'Summer': 18.5, 'Winter': 10.9 },
+            'X': { 'Summer': 11.0, 'Winter': 11.7 },
+            'Y': { 'Summer': 11.7, 'Winter': 13.2 },
+            'Z': { 'Summer': 7.9,  'Winter': 10.6 },
+        },
+        code_h: {
+            'P': { 'Summer': 18.0, 'Winter': 33.9 },
+            'Q': { 'Summer': 9.1,  'Winter': 19.3 },
+            'R': { 'Summer': 20.9, 'Winter': 30.2 },
+            'S': { 'Summer': 18.0, 'Winter': 28.6 },
+            'T': { 'Summer': 9.1,  'Winter': 16.8 },
+            'V': { 'Summer': 19.4, 'Winter': 33.4 },
+            'W': { 'Summer': 23.5, 'Winter': 22.8 },
+            'X': { 'Summer': 10.3, 'Winter': 19.3 },
+            'Y': { 'Summer': 14.1, 'Winter': 30.7 },
+            'Z': { 'Summer': 11.2,  'Winter': 22.5 },
+        },
     },
     prices: {
         'Summer Peak': [
@@ -218,7 +235,7 @@ function convertToPrice(some_plan, some_rate, accumulated, time)
     {
         var daysThisMonth = time.getDaysBetween(time.clone().addMonths(1));
         // Figure out what tier we're in
-        baseline = some_plan.baselines[argv.b][some_rate.split(' ')[0]] * daysThisMonth;
+        baseline = some_plan.baselines[argv.a?'code_h':'code_b'][argv.b][some_rate.split(' ')[0]] * daysThisMonth;
     }
 
     var price_list = some_plan.prices[some_rate];
