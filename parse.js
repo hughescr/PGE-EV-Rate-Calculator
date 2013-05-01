@@ -8,20 +8,21 @@ var printf = require('printf');
 require('date-utils');
 
 var argv = require('optimist')
-    .usage('Usage: $0 [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
+    .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
     .demand(1)
+    .boolean('a')
+    .alias('a','all-electric')
+    .describe('a','Use the "all electric" baseline numbers -- specify this option if your heating is electric instead of gas')
     .default('b', 'T')
     .alias('b','baseline-territory')
-    .describe('b',"Baseline territory ['P'..'Z'] from http://www.pge.com/tariffs/tm2/pdf/ELEC_PRELIM_A.pdf")
+    .describe('b',"Baseline territory ['P'..'Z'] from http://bit.ly/12kMV2l")
     .default('m', 50)
     .alias('m','miles-per-day')
     .describe('m','How many electric car miles per day do you want to add at off-peak charging')
     .default('c', 350)
     .alias('c','Wh-per-mile')
     .describe('c','How many Wh per mile do you get')
-    .boolean('a')
-    .alias('a','all-electric')
-    .describe('a','Use the "all eletric" baseline numbers -- specify this option if your heating is electric instead of gas')
+    .wrap(80)
     .argv
 
 var rates = {
