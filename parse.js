@@ -68,6 +68,52 @@ var rates = {
             },
         },
     },
+    E8 : {
+        schedule: [
+            {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, type: 'Summer'},
+            {type: 'Winter'}
+        ],
+        prices: {
+            'Summer': [
+                { end: 1, rate: 0.13668 },
+                { end: 1.3, rate: 0.13668 },
+                { end: 2, rate: 0.29742 },
+                { rate: 0.33742 },
+            ],
+            'Winter': [
+                { end: 1, rate: 0.08752 },
+                { end: 1.3, rate: 0.08752 },
+                { end: 2, rate: 0.24826 },
+                { rate: 0.28826 },
+            ],
+        },
+        baselines: {
+            code_b: {
+                'P': { 'Summer': 15.3, 'Winter': 12.7 },
+                'Q': { 'Summer': 7.5,  'Winter': 11.7 },
+                'R': { 'Summer': 17.1, 'Winter': 11.7 },
+                'S': { 'Summer': 15.3, 'Winter': 12.0 },
+                'T': { 'Summer': 7.5,  'Winter': 9.1 },
+                'V': { 'Summer': 12.0, 'Winter': 13.6 },
+                'W': { 'Summer': 18.5, 'Winter': 10.9 },
+                'X': { 'Summer': 11.0, 'Winter': 11.7 },
+                'Y': { 'Summer': 11.7, 'Winter': 13.2 },
+                'Z': { 'Summer': 7.9,  'Winter': 10.6 },
+            },
+            code_h: {
+                'P': { 'Summer': 18.0, 'Winter': 33.9 },
+                'Q': { 'Summer': 9.1,  'Winter': 19.3 },
+                'R': { 'Summer': 20.9, 'Winter': 30.2 },
+                'S': { 'Summer': 18.0, 'Winter': 28.6 },
+                'T': { 'Summer': 9.1,  'Winter': 16.8 },
+                'V': { 'Summer': 19.4, 'Winter': 33.4 },
+                'W': { 'Summer': 23.5, 'Winter': 22.8 },
+                'X': { 'Summer': 10.3, 'Winter': 19.3 },
+                'Y': { 'Summer': 14.1, 'Winter': 30.7 },
+                'Z': { 'Summer': 11.2,  'Winter': 22.5 },
+            },
+        },
+    },
     E6 : {
         schedule: [
             {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 13, end_time: 19, type: 'Summer Peak'},
