@@ -210,14 +210,15 @@ function convertToRate(some_date, some_plan)
     }
 }
 
-function convertToPrice(some_plan, some_rate, accumulated)
+function convertToPrice(some_plan, some_rate, accumulated, time)
 {
     var rate = 0;
     var baseline = 1;
     if(some_plan.baselines)
     {
+        var daysThisMonth = time.getDaysBetween(time.clone().addMonths(1));
         // Figure out what tier we're in
-        baseline = some_plan.baselines[argv.b][some_rate.split(' ')[0]];
+        baseline = some_plan.baselines[argv.b][some_rate.split(' ')[0]] * daysThisMonth;
     }
 
     var price_list = some_plan.prices[some_rate];
@@ -280,12 +281,12 @@ var parser = new xml.SaxParser(function(cb) {
             time = currentStart.clone().clearTime();
 
             e9Rate = convertToRate( time, e9 );
-            e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * extraJuice;
+            e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice, time) * extraJuice;
             e9Total += e9Cost;
             e9Season[e9Rate.split(' ')[0]] += e9Cost;
 
             evRate = convertToRate( time, ev );
-            evCost = convertToPrice(ev, evRate, currentMonthJuice) * extraJuice;
+            evCost = convertToPrice(ev, evRate, currentMonthJuice, time) * extraJuice;
             evTotal += evCost;
             evSeason[evRate.split(' ')[0]] += evCost;
         }
@@ -293,12 +294,12 @@ var parser = new xml.SaxParser(function(cb) {
         currentMonthJuice += currentValue;
 
         e9Rate = convertToRate(currentStart, e9);
-        e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice) * currentValue;
+        e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice, currentStart) * currentValue;
         e9Total += e9Cost;
         e9Season[e9Rate.split(' ')[0]] += e9Cost;
 
         evRate = convertToRate(currentStart,ev);
-        evCost = convertToPrice(ev, evRate, currentMonthJuice) * currentValue;
+        evCost = convertToPrice(ev, evRate, currentMonthJuice, currentStart) * currentValue;
         evTotal += evCost;
         evSeason[evRate.split(' ')[0]] += evCost;
     }
