@@ -34,6 +34,82 @@ var in_start = false;
 var in_cost = false;
 var in_value = false;
 
+var e6 = {
+    schedule: [
+        {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 13, end_time: 19, type: 'Summer Peak'},
+
+        {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 10, end_time: 13, type: 'Summer Partial Peak'},
+        {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 19, end_time: 21, type: 'Summer Partial Peak'},
+        {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Saturday', end_day: 'Sunday', start_time: 17, end_time: 20, type: 'Summer Partial Peak'},
+
+        {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, type: 'Summer Off Peak'},
+
+        {start_cal: { month: 'November', day: 1 }, end_cal: { month: 'December', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 17, end_time: 20, type: 'Winter Partial Peak'},
+        {start_cal: { month: 'January', day: 1 }, end_cal: { month: 'April', day: 30 }, start_day: 'Monday', end_day: 'Friday', start_time: 17, end_time: 20, type: 'Winter Partial Peak'},
+
+        {type: 'Winter Off Peak'}
+    ],
+    baselines: {
+        code_b: {
+            'P': { 'Summer': 15.3, 'Winter': 12.7 },
+            'Q': { 'Summer': 7.5,  'Winter': 11.7 },
+            'R': { 'Summer': 17.1, 'Winter': 11.7 },
+            'S': { 'Summer': 15.3, 'Winter': 12.0 },
+            'T': { 'Summer': 7.5,  'Winter': 9.1 },
+            'V': { 'Summer': 12.0, 'Winter': 13.6 },
+            'W': { 'Summer': 18.5, 'Winter': 10.9 },
+            'X': { 'Summer': 11.0, 'Winter': 11.7 },
+            'Y': { 'Summer': 11.7, 'Winter': 13.2 },
+            'Z': { 'Summer': 7.9,  'Winter': 10.6 },
+        },
+        code_h: {
+            'P': { 'Summer': 18.0, 'Winter': 33.9 },
+            'Q': { 'Summer': 9.1,  'Winter': 19.3 },
+            'R': { 'Summer': 20.9, 'Winter': 30.2 },
+            'S': { 'Summer': 18.0, 'Winter': 28.6 },
+            'T': { 'Summer': 9.1,  'Winter': 16.8 },
+            'V': { 'Summer': 19.4, 'Winter': 33.4 },
+            'W': { 'Summer': 23.5, 'Winter': 22.8 },
+            'X': { 'Summer': 10.3, 'Winter': 19.3 },
+            'Y': { 'Summer': 14.1, 'Winter': 30.7 },
+            'Z': { 'Summer': 11.2,  'Winter': 22.5 },
+        },
+    },
+    prices: {
+        'Summer Peak': [
+            { end: 1, rate: 0.28719 },
+            { end: 1.3, rate: 0.30529 },
+            { end: 2, rate: 0.46623 },
+            { rate: 0.50623 },
+        ],
+        'Summer Partial Peak' : [
+            { end: 1, rate: 0.17528 },
+            { end: 1.3, rate: 0.19338 },
+            { end: 2, rate: 0.35432 },
+            { rate: 0.39432 },
+        ],
+        'Summer Off Peak' : [
+            { end: 1, rate: 0.10074 },
+            { end: 1.3, rate: 0.11884 },
+            { end: 2, rate: 0.27978 },
+            { rate: 0.31978 },
+        ],
+        'Winter Partial Peak': [
+            { end: 1, rate: 0.12129 },
+            { end: 1.3, rate: 0.13939 },
+            { end: 2, rate: 0.30033 },
+            { rate: 0.34033 },
+        ],
+        'Winter Off Peak': [
+            { end: 1, rate: 0.10495 },
+            { end: 1.3, rate: 0.12305 },
+            { end: 2, rate: 0.28399 },
+            { rate: 0.32399 },
+        ],
+    }
+};
+
+
 var e9 = {
     schedule: [
         {start_cal: { month: 'May', day: 1 }, end_cal: { month: 'October', day: 31 }, start_day: 'Monday', end_day: 'Friday', start_time: 14, end_time: 21, type: 'Summer Peak'},
@@ -155,9 +231,14 @@ var ev = {
     }
 };
 
-
+var e6Total = 0;
 var e9Total = 0;
 var evTotal = 0;
+
+var e6Season = {
+    'Summer': 0,
+    'Winter': 0,
+}
 
 var e9Season = {
     'Summer': 0,
@@ -257,10 +338,10 @@ var parser = new xml.SaxParser(function(cb) {
 
   });
   cb.onEndDocument(function() {
-        console.log("Summer E9: "+(Math.round(e9Season['Summer']*100)/100)+"\tSummer EV: "+(Math.round(evSeason['Summer']*100)/100)+"\t "+(Math.round((evSeason['Summer']/e9Season['Summer'])*10000)/100)+"%");
-        console.log("Winter E9: "+(Math.round(e9Season['Winter']*100)/100)+"\tWinter EV: "+(Math.round(evSeason['Winter']*100)/100)+"\t "+(Math.round((evSeason['Winter']/e9Season['Winter'])*10000)/100)+"%");
-        console.log("Total E9: "+(Math.round(e9Total*100)/100)+"\tTotal EV: "+(Math.round(evTotal*100)/100)+"\t "+(Math.round((evTotal/e9Total)*10000)/100)+"%");
-        console.log("E9 per day: "+(Math.round(e9Total/numDays*100)/100)+"\tEV per day: "+(Math.round(evTotal/numDays*100)/100))
+        console.log("Summer E6: "+(Math.round(e6Season['Summer']*100)/100)+"\tSummer E9: "+(Math.round(e9Season['Summer']*100)/100)+"\tSummer EV: "+(Math.round(evSeason['Summer']*100)/100)+"\t "+(Math.round((evSeason['Summer']/e9Season['Summer'])*10000)/100)+"%");
+        console.log("Winter E6: "+(Math.round(e6Season['Winter']*100)/100)+"\tWinter E9: "+(Math.round(e9Season['Winter']*100)/100)+"\tWinter EV: "+(Math.round(evSeason['Winter']*100)/100)+"\t "+(Math.round((evSeason['Winter']/e9Season['Winter'])*10000)/100)+"%");
+        console.log("Total E6: "+(Math.round(e6Total*100)/100)+"\tTotal E9: "+(Math.round(e9Total*100)/100)+"\tTotal EV: "+(Math.round(evTotal*100)/100)+"\t "+(Math.round((evTotal/e9Total)*10000)/100)+"%");
+        console.log("E6 per day: "+(Math.round(e6Total/numDays*100)/100)+"\tE9 per day: "+(Math.round(e9Total/numDays*100)/100)+"\tEV per day: "+(Math.round(evTotal/numDays*100)/100))
   });
   cb.onStartElementNS(function(elem, attrs, prefix, uri, namespaces) {
       if(elem == "duration") {
@@ -297,6 +378,11 @@ var parser = new xml.SaxParser(function(cb) {
 
             time = currentStart.clone().clearTime();
 
+            e6Rate = convertToRate( time, e6 );
+            e6Cost = convertToPrice(e6, e6Rate, currentMonthJuice, time) * extraJuice;
+            e6Total += e6Cost;
+            e6Season[e6Rate.split(' ')[0]] += e6Cost;
+
             e9Rate = convertToRate( time, e9 );
             e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice, time) * extraJuice;
             e9Total += e9Cost;
@@ -309,6 +395,11 @@ var parser = new xml.SaxParser(function(cb) {
         }
 
         currentMonthJuice += currentValue;
+
+        e6Rate = convertToRate(currentStart, e6);
+        e6Cost = convertToPrice(e6, e6Rate, currentMonthJuice, currentStart) * currentValue;
+        e6Total += e6Cost;
+        e6Season[e6Rate.split(' ')[0]] += e6Cost;
 
         e9Rate = convertToRate(currentStart, e9);
         e9Cost = convertToPrice(e9, e9Rate, currentMonthJuice, currentStart) * currentValue;
