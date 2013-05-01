@@ -16,14 +16,24 @@ var argv = require('optimist')
     .default('b', 'T')
     .alias('b','baseline-territory')
     .describe('b',"Baseline territory ['P'..'Z'] from http://bit.ly/12kMV2l")
-    .default('m', 50)
-    .alias('m','miles-per-day')
-    .describe('m','How many electric car miles per day do you want to add at off-peak charging')
     .default('c', 350)
     .alias('c','Wh-per-mile')
     .describe('c','How many Wh per mile do you get')
+    .default('m', 50)
+    .alias('m','miles-per-day')
+    .describe('m','How many electric car miles per day do you want to add at off-peak charging')
+    .alias('s','start-date')
+    .describe('s','Ignore any data before this date')
+    .alias('e','end-data')
+    .describe('e','Ignore any data after this date')
     .wrap(80)
     .argv
+
+var earliestDate;
+if(argv.s) earliestDate = new Date(argv.s);
+
+var latestDate;
+if(argv.e) latestDate = new Date(argv.e).addDays(1);
 
 var rates = {
     E1 : {
@@ -524,6 +534,9 @@ var parser = new xml.SaxParser(function(cb) {
   });
   cb.onEndElementNS(function(elem, prefix, uri) {
     if(elem == "IntervalReading") {
+
+        if(argv.s && currentStart.isBefore(earliestDate)) return;
+        if(argv.e && currentStart.isAfter(latestDate)) return;
 
         if(currentStart.getMonth() != currentMonth)
         {
