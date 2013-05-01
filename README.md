@@ -1,8 +1,12 @@
 # Overview
 
 This is a little XML parsing app I wrote to try and estimate whether PG&E customers are better off on the E9-A or the EV-A rate plan.
+
 It can use actual usage data downloaded from PG&E to calculate hopefully quite accurately for you.
-It's a little rough right now -- just basically outputs expected total cost of the data chunk you downloaded assuming you had been on rate plan E9-A or EV-A at the time.  It assumes billing periods are on month boundaries for purposes of baseline calculations.  If you use the `-m` option to add electric car miles to the downloaded data, it assumes all that charging happens instantaneously at midnight (off-peak) at the start of every day.  I could use some charging rate and spread it over a few hours, but that won't affect cost much (baseline will shift slightly for E9 rate, but not much).
+
+It assumes billing periods are on month boundaries for purposes of baseline calculations.  It may or may not use quite the same algorithm as PG&E does for calculating what %age of baseline you're at, but it's probably close enough for horseshoes.
+
+If you use the `-m` option to add electric car miles to the downloaded data, it assumes all that charging happens instantaneously at midnight (off-peak) at the start of every day.  I could use some charging rate and spread it over a few hours, but that won't affect cost much (baseline will shift slightly for TOU rates, but not much).
 
 # HOWTO
 
@@ -13,6 +17,8 @@ Then, install some modules:
     npm install optimist
     npm install date-utils
     npm install node-xml
+    npm install printf
+    npm install util
 
 ## PG&E Data Download
 
@@ -33,19 +39,42 @@ The best thing to do is download a long period of data which does NOT include el
 
 Now run (obviously use your own electric XML filename):
 
-    ./parse.js pge_electric_interval_data_2012-03-30_to_2013-03-13.xml
+    ./parse.js pge_electric_interval_data_2008-03-30_to_2013-03-13.xml
 
 Output will look something like:
 
-    Total E9: 3620.82   Total EV: 2023.52
+    Rate: E1
+    Summer  Cost: $7010.64   Per day: $11.49
+    Winter  Cost: $9126.48   Per day: $13.58
+    Total   Cost: $16137.12  Per day: $12.59
+    Rate: E6
+    Summer  Cost: $7185.56   Per day: $11.78
+    Winter  Cost: $8577.94   Per day: $12.76
+    Total   Cost: $15763.50  Per day: $12.30
+    Rate: E7
+    Summer  Cost: $6686.34   Per day: $10.96
+    Winter  Cost: $8025.64   Per day: $11.94
+    Total   Cost: $14711.98  Per day: $11.48
+    Rate: E8
+    Summer  Cost: $6959.59   Per day: $11.41
+    Winter  Cost: $7481.49   Per day: $11.13
+    Total   Cost: $14441.08  Per day: $11.26
+    Rate: E9
+    Summer  Cost: $5582.90   Per day: $9.15
+    Winter  Cost: $6436.79   Per day: $9.58
+    Total   Cost: $12019.69  Per day: $9.38
+    Rate: EV
+    Summer  Cost: $3752.77   Per day: $6.15
+    Winter  Cost: $4576.09   Per day: $6.81
+    Total   Cost: $8328.86   Per day: $6.50
 
 Those numbers are basically the amount in dollars you would expect to have paid if you had been on the specified rate plan during the period covered by the data you downloaded.
 
-There are some optional flags that default to "My house in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile".  You can type
+There are some optional flags that default to "Where I live in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile", and "I do heat my house with gas not electric".  You can type
 
     ./parse.js
 
-with no arguments to get help information
+with no arguments to get help information on how to change from those defaults.
 
 
 # Resources
