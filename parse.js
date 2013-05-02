@@ -397,9 +397,9 @@ for(var rateName in rates)
     totals[rateName] = {};
     for(var periodName in rates[rateName].prices)
     {
-        totals[rateName][periodName.split(' ')[0]] = { cost: 0, numDays: 0 };
+        totals[rateName][periodName.split(' ')[0]] = { cost: 0, numDays: 0, amount: 0 };
     }
-    totals[rateName]['Total'] = { cost: 0, numDays: 0 };
+    totals[rateName]['Total'] = { cost: 0, numDays: 0, amount: 0 };
 }
 
 
@@ -513,7 +513,11 @@ var parser = new xml.SaxParser(function(cb) {
             for(var period in data)
             {
                 sub_data = data[period];
-                util.puts(period+"\tCost: $"+printf("%0.2f",sub_data.cost)+"\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays));
+                util.puts(period +
+                    "\tCost: $"+printf("%0.2f",sub_data.cost) +
+                    "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+                    "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+                    "");
             }
         }
   });
@@ -564,9 +568,11 @@ var parser = new xml.SaxParser(function(cb) {
 
                 totals[rateName][type.split(' ')[0]].cost += cost;
                 totals[rateName][type.split(' ')[0]].numDays++;
+                totals[rateName][type.split(' ')[0]].amount += extraJuice;
 
                 totals[rateName]['Total'].cost += cost;
                 totals[rateName]['Total'].numDays++;
+                totals[rateName]['Total'].amount += extraJuice;
             }
         }
 
@@ -580,8 +586,10 @@ var parser = new xml.SaxParser(function(cb) {
             var cost = convertToPrice( rate, type, currentMonthJuice, currentStart ) * currentValue;
 
             totals[rateName][type.split(' ')[0]].cost += cost;
+            totals[rateName][type.split(' ')[0]].amount += currentValue;
 
             totals[rateName]['Total'].cost += cost;
+            totals[rateName]['Total'].amount += currentValue;
         }
     }
     else if(elem == "duration")
