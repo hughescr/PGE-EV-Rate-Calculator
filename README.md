@@ -30,6 +30,8 @@ Then, install some modules:
 
 Unzip that; it'll contain 2 files.  One for electric data, one for gas.  Ignore the gas one.  The electric one is your input file.
 
+You can also (optionally) download "Export all bill totals", and as XML format.  You can pass that file to the program using the "-S" option -- the program will then use your billing periods instead of assuming that billing and baseline usage reset on the 1st of every month.  Note this is optional -- if you use "-m 0", then it should be pretty close to matching your actual historic billed data.  If you don't provide this "-S" file, the overall estimate should be decent, but it won't match up month-for-month with your actual billed data.
+
 ### Caveats
 
 The best thing to do is download a long period of data which does NOT include electric car charging (so you get a long baseline of house-only time), then have the program add car charging estimates -- it'll add the number of miles per day * Wh per mile EVERY DAY at midnight (ie always off-peak).

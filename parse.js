@@ -26,6 +26,8 @@ var argv = require('optimist')
     .describe('s','Ignore any data before this date')
     .alias('e','end-data')
     .describe('e','Ignore any data after this date')
+    .alias('S','summary')
+    .describe('S','Summary bill data to obtain billing start/stop periods')
     .wrap(80)
     .argv
 
@@ -34,6 +36,8 @@ if(argv.s) earliestDate = new Date(argv.s);
 
 var latestDate;
 if(argv.e) latestDate = new Date(argv.e).addDays(1);
+
+var billing_periods = [];
 
 var rates = {
     E1 : {
@@ -487,9 +491,69 @@ function convertToPrice(some_plan, some_rate, accumulated, time)
     }
 }
 
+
+if(argv.S)
+{
+
+/*
+        <IntervalReading>
+          <cost>22026000</cost>
+          <timePeriod>
+            <duration>2678400</duration>
+            <start>1211266800</start>
+          </timePeriod>
+          <value>1035000</value>
+        </IntervalReading>
+*/
+
+    var in_intervalreading = false;
+    var in_start = false;
+    var currentStart = "";
+
+    var bill_parser = new xml.SaxParser(function(cb)
+    {
+        cb.onStartElementNS(function(elem, attrs, prefix, uri, namespaces)
+        {
+            if(elem == "IntervalReading")
+            {
+                in_intervalreading = true;
+            }
+            if(in_intervalreading && elem == "start")
+            {
+                in_start = true;
+                currentStart = "";
+            }
+        });
+        cb.onEndElementNS(function(elem, prefix, uri)
+        {
+            if(elem == "IntervalReading")
+            {
+                in_intervalreading = false;
+            }
+            if(in_intervalreading && elem == "start")
+            {
+                var date = new Date(parseInt(currentStart)*1000)
+                billing_periods.push(date);
+                in_start = false;
+            }
+        });
+        cb.onCharacters(function(chars)
+        {
+            if(in_intervalreading && in_start)
+            {
+                currentStart = currentStart+chars;
+            }
+        });
+    });
+
+    bill_parser.parseFile(argv.S);
+}
+
+
 /* These variables track state during parsing */
 var currentDay = 0;
 var currentMonth = 0;
+var nextBill = 0;
 var currentMonthJuice = 0;
 var currentStart = "";
 var currentDuration = "";
@@ -500,10 +564,7 @@ var in_start = false;
 var in_cost = false;
 var in_value = false;
 
-var parser = new xml.SaxParser(function(cb) {
-  cb.onStartDocument(function() {
-
-  });
+var detail_parser = new xml.SaxParser(function(cb) {
   cb.onEndDocument(function() {
         // Print out report
         for(var rate in totals)
@@ -542,10 +603,19 @@ var parser = new xml.SaxParser(function(cb) {
         if(argv.s && currentStart.isBefore(earliestDate)) return;
         if(argv.e && currentStart.isAfter(latestDate)) return;
 
-        if(currentStart.getMonth() != currentMonth)
+        if(!argv.S)
         {
-            currentMonth = currentStart.getMonth();
-            currentMonthJuice = 0;
+            if(currentStart.getMonth() != currentMonth)
+            {
+                currentMonth = currentStart.getMonth();
+                currentMonthJuice = 0;
+            }
+        } else {
+            if(nextBill < billing_periods.length && (currentStart.equals(billing_periods[nextBill]) || currentStart.isAfter(billing_periods[nextBill])))
+            {
+                nextBill++;
+                currentMonthJuice = 0;
+            }
         }
 
         // At start of every day, add off-peak car charging
@@ -636,7 +706,4 @@ var parser = new xml.SaxParser(function(cb) {
   });
 });
 
-
-
-//example read from file
-parser.parseFile(argv._[0]);
+detail_parser.parseFile(argv._[0]);
