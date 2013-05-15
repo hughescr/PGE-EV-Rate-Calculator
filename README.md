@@ -12,13 +12,9 @@ If you use the `-m` option to add electric car miles to the downloaded data, it 
 
 First, install [node.js](http://nodejs.org/)
 
-Then, install some modules:
+Then, install this package:
 
-    npm install optimist
-    npm install date-utils
-    npm install node-xml
-    npm install printf
-    npm install util
+    npm install pge-parse
 
 ## PG&E Data Download
 
@@ -41,7 +37,7 @@ The best thing to do is download a long period of data which does NOT include el
 
 Now run (obviously use your own electric XML filename):
 
-    ./parse.js pge_electric_interval_data_2008-03-30_to_2013-03-13.xml
+    pge-parse pge_electric_interval_data_2008-03-30_to_2013-03-13.xml
 
 Output will look something like:
 
@@ -74,7 +70,7 @@ Those numbers are basically the amount in dollars you would expect to have paid 
 
 There are some optional flags that default to "Where I live in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile", and "I do heat my house with gas not electric".  You can type
 
-    ./parse.js
+    pge-parse
 
 with no arguments to get help information on how to change from those defaults.
 
