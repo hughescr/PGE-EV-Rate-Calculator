@@ -88,3 +88,6 @@ The program uses data gathered from the following PG&E documents:
 * [E9 rate plan](http://www.pge.com/tariffs/tm2/pdf/ELEC_SCHEDS_E-9.pdf)
 
 * [EV rate plan proposal](http://www.pge.com/nots/rates/tariffs/tm2/pdf/ELEC_3910-E-A.pdf)
+
+* [2012 meter reading schedule](http://www.pge.com/includes/docs/pdfs/shared/customerservice/meter/readingschedule/mtr_schedule.pdf)
+* [2013 meter reading schedule](http://www.pge.com/includes/docs/pdfs/shared/customerservice/meter/readingschedule/mtr_schedule_2013.pdf)
