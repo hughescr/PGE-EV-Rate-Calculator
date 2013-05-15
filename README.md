@@ -37,7 +37,7 @@ The best thing to do is download a long period of data which does NOT include el
 
 Now run (obviously use your own electric XML filename):
 
-    pge-parse pge_electric_interval_data_2008-03-30_to_2013-03-13.xml
+    pge-analyzer pge_electric_interval_data_2008-03-30_to_2013-03-13.xml
 
 Output will look something like:
 
@@ -70,7 +70,7 @@ Those numbers are basically the amount in dollars you would expect to have paid 
 
 There are some optional flags that default to "Where I live in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile", and "I do heat my house with gas not electric".  You can type
 
-    pge-parse
+    pge-analyzer
 
 with no arguments to get help information on how to change from those defaults.
 
