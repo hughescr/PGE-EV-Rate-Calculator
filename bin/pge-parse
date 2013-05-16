@@ -2,6 +2,7 @@
 
 var pge_parse = require('../lib/pge-parse');
 require('date-utils');
+var printf = require('printf');
 
 var argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
@@ -27,9 +28,7 @@ var argv = require('optimist')
     .wrap(80)
     .argv
 
-pge_parse.parseFile(
-                        argv._[0],
-                        argv.S,
+var parser = pge_parse.PGEParser(
                         argv.a,
                         argv.b,
                         argv.c,
@@ -37,3 +36,32 @@ pge_parse.parseFile(
                         argv.s ? new Date(argv.s) : undefined,
                         argv.e ? new Date(argv.e).addDays(1) : undefined
                     );
+
+function report(totals)
+{
+    // Print out report
+    for(var rate in totals)
+    {
+        data = totals[rate];
+        util.puts("Rate: "+rate);
+        for(var period in data)
+        {
+            sub_data = data[period];
+            util.puts(period +
+                "\tCost: $"+printf("%0.2f",sub_data.cost) +
+                "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+                "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+                "");
+        }
+    }
+}
+
+var details = parser.detailsParser(report);
+
+if(argv.S)
+{
+    parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
+} else {
+    details.parseFile(argv._[0]);
+}
+

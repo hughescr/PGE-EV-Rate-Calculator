@@ -13,8 +13,6 @@ http.createServer(function(req, res) {
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
       res.writeHead(200, {'content-type': 'text/plain'});
-      res.write('received upload:\n\n');
-      res.end(sys.inspect({fields: fields, files: files}));
     });
 
     var argv = {};
@@ -34,12 +32,13 @@ http.createServer(function(req, res) {
         argv['_'] = [ file.path ];
     });
 
-    form.on('end', function()
-    {
-        // We should really use node-xml parseString() repeatedly to parse in chunks as the upload comes in
-        pge_parse.parseFile(
-                        argv._[0],
-                        argv.S,
+    form.onPart = function(part) {
+      if (!part.filename) {
+        // let formidable handle all non-file parts
+        form.handlePart(part);
+      } else {
+        console.log("New parser");
+        var parser = pge_parse.PGEParser(
                         argv.a,
                         argv.b,
                         argv.c,
@@ -47,7 +46,49 @@ http.createServer(function(req, res) {
                         argv.s ? new Date(argv.s) : undefined,
                         argv.e ? new Date(argv.e).addDays(1) : undefined
                     );
-    });
+
+        function report(totals)
+        {
+            console.log("Report");
+            // Print out report
+            // for(var rate in totals)
+            // {
+            //     // data = totals[rate];
+            //     // util.puts("Rate: "+rate);
+            //     // for(var period in data)
+            //     // {
+            //     //     sub_data = data[period];
+            //     //     util.puts(period +
+            //     //         "\tCost: $"+printf("%0.2f",sub_data.cost) +
+            //     //         "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+            //     //         "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+            //     //         "");
+            //     // }
+
+            // }
+            res.end(sys.inspect(totals));
+        }
+
+        var details = parser.detailsParser(report);
+
+        part.addListener('data', function(chunk) {
+            console.log("Chunk");
+            details.parseString(chunk);
+        });
+      }
+    }
+
+    // form.on('end', function()
+    // {
+    //     // We should really use node-xml parseString() repeatedly to parse in chunks as the upload comes in
+
+    //     if(argv.S)
+    //     {
+    //         parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
+    //     } else {
+    //         details.parseFile(argv._[0]);
+    //     }
+    // });
 
     return;
   }
