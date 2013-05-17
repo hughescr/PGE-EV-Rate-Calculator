@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var pge_parse = require('../lib/pge-parse');
+var pge_parse = require('pge-analyzer');
 require('date-utils');
 var printf = require('printf');
 

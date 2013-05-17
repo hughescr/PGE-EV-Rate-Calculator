@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-var pge_parse = require('../lib/pge-parse');
+var pge_parse = require('pge-analyzer');
 require('date-utils');
 
 var formidable = require('formidable');
 var http = require('http');
 var sys = require('sys');
+
+var serverPort = process.env.npm_package_config_port || 8080;
 
 http.createServer(function(req, res) {
   if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
@@ -126,4 +128,6 @@ http.createServer(function(req, res) {
     + '<input type="submit" value="Calculate!">'
     + '</form>'
     );
-}).listen(22874);
+}).listen(serverPort);
+
+console.log("Started server on port",serverPort);
