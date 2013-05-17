@@ -7,6 +7,7 @@ require('date-utils');
 var formidable = require('formidable');
 var http = require('http');
 var sys = require('sys');
+var fs = require('fs');
 
 var serverPort = process.env.npm_package_config_port || 8080;
 
@@ -32,7 +33,7 @@ http.createServer(function(req, res) {
 
     form.on('file', function(name, file)
     {
-        argv['_'] = [ file.path ];
+        fs.unlink(file.path);
     });
 
     var parser = undefined;
@@ -47,8 +48,6 @@ http.createServer(function(req, res) {
 
       if(!parser)
       {
-        console.log("New parser");
-
         parser = pge_parse.PGEParser(
                         argv.a,
                         argv.b,
@@ -60,9 +59,8 @@ http.createServer(function(req, res) {
       }
 
       if(part.name == 'summary') {
-        var summary = parser.summaryParser(function() { console.log("Summary complete"); });
+        var summary = parser.summaryParser(function() {});
 
-        console.log("Summary start");
         part.addListener('data', function(chunk) {
             summary.parseString(chunk);
         });
@@ -72,28 +70,27 @@ http.createServer(function(req, res) {
       if(part.name == 'details') {
         function report(totals)
         {
-            console.log("Report");
             // Print out report
             for(var rate in totals)
             {
                 data = totals[rate];
-                res.write("Rate: "+rate+"\n");
+                res.write("<div class='rate' style='padding: 1em;'>Rate: "+rate);
                 for(var period in data)
                 {
                     sub_data = data[period];
-                    res.write("\t"+ period +
-                        "\tCost: $"+printf("%0.2f",sub_data.cost) +
-                        "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
-                        "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
-                        "\n");
+                    res.write("<div class='subtotal' style='padding-left: 1em;'>"+ period +
+                        " Cost: $"+printf("%0.2f",sub_data.cost) +
+                        " Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+                        " Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+                        "</div>");
                 }
+                res.write("</div>");
             }
             res.end();
         }
 
         var details = parser.detailsParser(report);
 
-        console.log("Details start");
         part.addListener('data', function(chunk) {
             details.parseString(chunk);
         });
@@ -117,17 +114,82 @@ http.createServer(function(req, res) {
 
   // show a file upload form
   res.writeHead(200, {'content-type': 'text/html'});
-  res.end
-    ( '<form action="/upload" enctype="multipart/form-data" method="post">'
-    + 'Uses all-electric heating: <input type="text" name="a" value="true"><br>'
-    + 'Baseline Territory: <input type="text" name="b" value="T"><br>'
-    + 'Wh/mile: <input type="text" name="c" value="350"><br>'
-    + 'Miles per day: <input type="text" name="m" value="50"><br>'
-    + 'Billing Summary: <input type="file" name="summary"><br>'
-    + 'Billing Details: <input type="file" name="details"><br>'
-    + '<input type="submit" value="Calculate!">'
-    + '</form>'
-    );
+  res.end(
+    '<!doctype html>'+
+    '<head>'+
+    '<link href="http://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet" type="text/css">'+
+    '<title>PG&E Rate Calculator</title>'+
+    '<style>'+
+    'body { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; padding: 30px }'+
+    'form { width: 500px; background: #eee; border-radius: 10px; padding: 15px; line-height: 2em; }'+
+    'select { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; font-size: 120%; float: right; }'+
+    'input { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; font-size: 100%; float: right; }'+
+    '.submit { float: none; width: 100%; }'+
+    '.progress { position:relative; width:500px; border: 1px solid #ddd; margin: 15px; border-radius: 3px; }'+
+    '.bar { background-color: #eee; width:0%; height:1.75em; border-radius: 3px; }'+
+    '.percent { position:absolute; display:inline-block; top:3px; left:48%; }'+
+    '#status { position:relative; top:0px; left:0px; font-family: "Lucida Console", Monaco, monospace; }' +
+    '</style>'+
+    '</head>'+
+    '<body>'+
+        '<h1>PG&E Rate Calculator</h1>'+
+            '<form action="/upload" method="post" enctype="multipart/form-data">'+
+            '<label for="a">Home heating</label><select id="a" name="a"><option value="false">Gas/Other</option><option value="true">Electric</option></select><br />'+
+            '<label for="b">Baseline Territory</label><select id="b" name="b"><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T" selected>T</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select><br />'+
+            '<label for="c">Wh/mile</label><input type="text" id="c" name="c" size="4" maxlength="4" value="350" /><br />'+
+            '<label for="m">Miles per day</label><input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />'+
+            '<label for="summary">Billing Summary <span style="font-size: x-small;">[optional]</span></label><input type="file" id="summary" name="summary" /><br />'+
+            '<label for="details">Billing Details</label><input type="file" id="details" name="details" /><br />'+
+            '<input class="submit" type="submit" value="Calculate!" />'+
+        '</form>'+
+''+
+        '<div class="progress">'+
+            '<div class="bar"></div >'+
+            '<div class="percent">0%</div >'+
+        '</div>'+
+''+
+        '<div id="status"></div>'+
+''+
+    '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>'+
+    '<script src="http://malsup.github.com/jquery.form.js"></script>'+
+    '<script>'+
+    '(function() {'+
+''+
+    'var progress = $(".progress");'+
+    'progress.hide();'+
+    'var bar = $(".bar");'+
+    'var percent = $(".percent");'+
+    'var status = $("#status");'+
+''+
+    '$("form").ajaxForm({'+
+        'beforeSend: function() {'+
+            'status.empty();'+
+            'var percentVal = "0%";'+
+            'progress.slideDown();' +
+            'status.fadeOut();' +
+            'bar.width(percentVal);'+
+            'percent.html(percentVal);'+
+        '},'+
+        'uploadProgress: function(event, position, total, percentComplete) {'+
+            'var percentVal = percentComplete + "%";'+
+            'bar.width(percentVal);'+
+            'percent.html(percentVal);'+
+        '},'+
+        'success: function() {'+
+            'var percentVal = "100%";'+
+            'bar.width(percentVal);'+
+            'percent.html(percentVal);'+
+        '},'+
+        'complete: function(xhr) {'+
+            'progress.slideUp();' +
+            'status.fadeIn();' +
+            'status.html(xhr.responseText);'+
+        '}'+
+    '}); '+
+''+
+    '})();       '+
+    '</script></body></html>'
+        );
 }).listen(serverPort);
 
 console.log("Started server on port",serverPort);
