@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+    <head>
+        <link href="main.css" rel="stylesheet" type="text/css" />
+        <link href="enhanced.css" rel="stylesheet" type="text/css" />
+        <title>PG&amp;E Rate Calculator</title>
+    </head>
+
+    <body>
+        <div class="form">
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <fieldset>
+                    <legend>PG&amp;E Rate Calculator</legend>
+                    <label for="a">Home heating</label>
+                    <select id="a" name="a">
+                        <option value="false">Gas/Other</option>
+                        <option value="true">Electric</option>
+                    </select><br />
+
+                    <label for="b">Baseline Territory</label>
+                    <select id="b" name="b">
+                        <option value="P">P</option>
+                        <option value="Q">Q</option>
+                        <option value="R">R</option>
+                        <option value="S">S</option>
+                        <option value="T" selected>T</option>
+                        <option value="V">V</option>
+                        <option value="W">W</option>
+                        <option value="X">X</option>
+                        <option value="Y">Y</option>
+                        <option value="Z">Z</option>
+                    </select><br />
+
+                    <label for="c">Wh/mile</label>
+                    <input type="text" id="c" name="c" size="4" maxlength="4" value="350" /><br />
+
+                    <label for="m">Miles per day</label>
+                    <input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />
+
+                    <label for="summary">Billing Summary <span style="font-size: x-small;">[optional]</span></label>
+                    <input type="file" id="summary" name="summary" />
+
+                    <label for="details">Billing Details</label>
+                    <input type="file" id="details" name="details" />
+
+                    <input class="submit" type="submit" value="Calculate!" />
+                </fieldset>
+            </form>
+        </div>
+
+        <div class="progress">
+            <div class="bar"></div>
+            <div class="percent">0%</div >
+        </div>
+
+        <div id="status"></div>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        <script src="http://malsup.github.com/jquery.form.js"></script>
+        <script src="jQuery.fileinput.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('#summary').customFileInput();
+                $('#details').customFileInput();
+
+                var progress = $(".progress");
+                progress.hide();
+                var bar = $(".bar");
+                var percent = $(".percent");
+                var status = $("#status");
+                status.hide();
+
+                $("form").ajaxForm(
+                {
+                    beforeSend: function() {
+                        status.empty();
+                        var percentVal = "0%";
+                        progress.slideDown();
+                        status.fadeOut();
+                        bar.width(percentVal);
+                        percent.html(percentVal);
+                    },
+                    uploadProgress: function(event, position, total, percentComplete) {
+                        var percentVal = percentComplete + "%";
+                        bar.width(percentVal);
+                        percent.html(percentVal);
+                    },
+                    success: function() {
+                        var percentVal = "100%";
+                        bar.width(percentVal);
+                        percent.html(percentVal);
+                    },
+                    complete: function(xhr) {
+                        progress.slideUp();
+                        status.fadeIn();
+                        status.html(xhr.responseText);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

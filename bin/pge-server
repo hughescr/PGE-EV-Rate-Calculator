@@ -7,127 +7,106 @@ require('date-utils');
 var formidable = require('formidable');
 var http = require('http');
 var sys = require('sys');
+var fs = require('fs');
+var express = require('express');
+var app = express();
 
 var serverPort = process.env.npm_package_config_port || 8080;
 
-http.createServer(function(req, res) {
-  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
-    // parse a file upload
-    var form = new formidable.IncomingForm();
-    form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'content-type': 'text/plain'});
-    });
-
-    var argv = {};
-
-    form.on('progress', function(bytesReceived, bytesExpected)
+app.use('/upload', function(req, res, next)
+{
+    if (req.method.toLowerCase() == 'post')
     {
-//        console.log(100*bytesReceived/bytesExpected,"%");
-    });
+        var form = new formidable.IncomingForm();
 
-    form.on('field', function(name, value)
-    {
-        argv[name] = value;
-    });
+        form.parse(req, function(err, fields, files) {});
 
-    form.on('file', function(name, file)
-    {
-        argv['_'] = [ file.path ];
-    });
+        var argv = {};
 
-    var parser = undefined;
-
-    form.onPart = function(part) {
-
-      if (!part.filename) {
-        // let formidable handle all non-file parts
-        form.handlePart(part);
-        return;
-      }
-
-      if(!parser)
-      {
-        console.log("New parser");
-
-        parser = pge_parse.PGEParser(
-                        argv.a,
-                        argv.b,
-                        argv.c,
-                        argv.m,
-                        argv.s ? new Date(argv.s) : undefined,
-                        argv.e ? new Date(argv.e).addDays(1) : undefined
-                    );
-      }
-
-      if(part.name == 'summary') {
-        var summary = parser.summaryParser(function() { console.log("Summary complete"); });
-
-        console.log("Summary start");
-        part.addListener('data', function(chunk) {
-            summary.parseString(chunk);
+        form.on('field', function(name, value)
+        {
+            argv[name] = value;
         });
 
-      }
-
-      if(part.name == 'details') {
-        function report(totals)
+        form.on('file', function(name, file)
         {
-            console.log("Report");
-            // Print out report
-            for(var rate in totals)
+            fs.unlink(file.path);
+        });
+
+        var parser = undefined;
+
+        form.onPart = function(part)
+        {
+            // Part can be a form field, or a file
+            if (!part.filename)
             {
-                data = totals[rate];
-                res.write("Rate: "+rate+"\n");
-                for(var period in data)
-                {
-                    sub_data = data[period];
-                    res.write("\t"+ period +
-                        "\tCost: $"+printf("%0.2f",sub_data.cost) +
-                        "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
-                        "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
-                        "\n");
-                }
+                // let formidable handle all non-file parts
+                form.handlePart(part);
+                return;
             }
-            res.end();
+
+            if(!parser)
+            {
+                parser = pge_parse.PGEParser(
+                    argv.a,
+                    argv.b,
+                    argv.c,
+                    argv.m,
+                    argv.s ? new Date(argv.s) : undefined,
+                    argv.e ? new Date(argv.e).addDays(1) : undefined
+                    );
+            }
+
+            if(part.name == 'summary')
+            {
+                var summary = parser.summaryParser(function() {});
+
+                part.addListener('data', function(chunk)
+                {
+                    summary.parseString(chunk);
+                });
+
+            }
+
+            if(part.name == 'details')
+            {
+                function report(totals)
+                {
+                    var response = "";
+                    // Print out report
+                    for(var rate in totals)
+                    {
+                        data = totals[rate];
+                        response += "<div class='rate'>Rate: " + rate;
+                        for(var period in data)
+                        {
+                            sub_data = data[period];
+                            response += "<div class='subtotal'>" + period +
+                            printf("<div class='cost'>Cost: <span class='money'>$%0.2f</span></div>",sub_data.cost) +
+                            printf("<div class='perkwh'>Per kWh: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.amount) +
+                            printf("<div class='perday'>Per day: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.numDays) +
+                            "</div>";
+                        }
+                        response += "</div>";
+                    }
+                    res.send(200, response);
+                }
+
+                var details = parser.detailsParser(report);
+
+                part.addListener('data', function(chunk)
+                {
+                    details.parseString(chunk);
+                });
+            }
         }
 
-        var details = parser.detailsParser(report);
-
-        console.log("Details start");
-        part.addListener('data', function(chunk) {
-            details.parseString(chunk);
-        });
-      }
+        return;
     }
+});
 
-    // form.on('end', function()
-    // {
-    //     // We should really use node-xml parseString() repeatedly to parse in chunks as the upload comes in
+app.use(express.static(__dirname + '/../public'));
 
-    //     if(argv.S)
-    //     {
-    //         parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
-    //     } else {
-    //         details.parseFile(argv._[0]);
-    //     }
-    // });
-
-    return;
-  }
-
-  // show a file upload form
-  res.writeHead(200, {'content-type': 'text/html'});
-  res.end
-    ( '<form action="/upload" enctype="multipart/form-data" method="post">'
-    + 'Uses all-electric heating: <input type="text" name="a" value="true"><br>'
-    + 'Baseline Territory: <input type="text" name="b" value="T"><br>'
-    + 'Wh/mile: <input type="text" name="c" value="350"><br>'
-    + 'Miles per day: <input type="text" name="m" value="50"><br>'
-    + 'Billing Summary: <input type="file" name="summary"><br>'
-    + 'Billing Details: <input type="file" name="details"><br>'
-    + '<input type="submit" value="Calculate!">'
-    + '</form>'
-    );
-}).listen(serverPort);
+app.listen(serverPort);
 
 console.log("Started server on port",serverPort);
