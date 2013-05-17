@@ -1,0 +1,133 @@
+#!/usr/bin/env node
+
+var pge_parse = require('pge-analyzer');
+require('date-utils');
+
+var formidable = require('formidable');
+var http = require('http');
+var sys = require('sys');
+
+var serverPort = process.env.npm_package_config_port || 8080;
+
+http.createServer(function(req, res) {
+  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
+    // parse a file upload
+    var form = new formidable.IncomingForm();
+    form.parse(req, function(err, fields, files) {
+      res.writeHead(200, {'content-type': 'text/plain'});
+    });
+
+    var argv = {};
+
+    form.on('progress', function(bytesReceived, bytesExpected)
+    {
+//        console.log(100*bytesReceived/bytesExpected,"%");
+    });
+
+    form.on('field', function(name, value)
+    {
+        argv[name] = value;
+    });
+
+    form.on('file', function(name, file)
+    {
+        argv['_'] = [ file.path ];
+    });
+
+    var parser = undefined;
+
+    form.onPart = function(part) {
+
+      if (!part.filename) {
+        // let formidable handle all non-file parts
+        form.handlePart(part);
+        return;
+      }
+
+      if(!parser)
+      {
+        console.log("New parser");
+
+        parser = pge_parse.PGEParser(
+                        argv.a,
+                        argv.b,
+                        argv.c,
+                        argv.m,
+                        argv.s ? new Date(argv.s) : undefined,
+                        argv.e ? new Date(argv.e).addDays(1) : undefined
+                    );
+      }
+
+      if(part.name == 'summary') {
+        var summary = parser.summaryParser(function() { console.log("Summary complete"); });
+
+        console.log("Summary start");
+        part.addListener('data', function(chunk) {
+            summary.parseString(chunk);
+        });
+
+      }
+
+      if(part.name == 'details') {
+        function report(totals)
+        {
+            console.log("Report");
+            // Print out report
+            // for(var rate in totals)
+            // {
+            //     // data = totals[rate];
+            //     // util.puts("Rate: "+rate);
+            //     // for(var period in data)
+            //     // {
+            //     //     sub_data = data[period];
+            //     //     util.puts(period +
+            //     //         "\tCost: $"+printf("%0.2f",sub_data.cost) +
+            //     //         "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+            //     //         "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+            //     //         "");
+            //     // }
+
+            // }
+            res.end(sys.inspect(totals));
+        }
+
+        var details = parser.detailsParser(report);
+
+        console.log("Details start");
+        part.addListener('data', function(chunk) {
+            details.parseString(chunk);
+        });
+      }
+    }
+
+    // form.on('end', function()
+    // {
+    //     // We should really use node-xml parseString() repeatedly to parse in chunks as the upload comes in
+
+    //     if(argv.S)
+    //     {
+    //         parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
+    //     } else {
+    //         details.parseFile(argv._[0]);
+    //     }
+    // });
+
+    return;
+  }
+
+  // show a file upload form
+  res.writeHead(200, {'content-type': 'text/html'});
+  res.end
+    ( '<form action="/upload" enctype="multipart/form-data" method="post">'
+    + 'Uses all-electric heating: <input type="text" name="a" value="true"><br>'
+    + 'Baseline Territory: <input type="text" name="b" value="T"><br>'
+    + 'Wh/mile: <input type="text" name="c" value="350"><br>'
+    + 'Miles per day: <input type="text" name="m" value="50"><br>'
+    + 'Billing Summary: <input type="file" name="summary"><br>'
+    + 'Billing Details: <input type="file" name="details"><br>'
+    + '<input type="submit" value="Calculate!">'
+    + '</form>'
+    );
+}).listen(serverPort);
+
+console.log("Started server on port",serverPort);
