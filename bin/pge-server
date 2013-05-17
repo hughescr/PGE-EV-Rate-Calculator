@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var pge_parse = require('pge-analyzer');
+var printf = require('printf');
 require('date-utils');
 
 var formidable = require('formidable');
@@ -73,22 +74,21 @@ http.createServer(function(req, res) {
         {
             console.log("Report");
             // Print out report
-            // for(var rate in totals)
-            // {
-            //     // data = totals[rate];
-            //     // util.puts("Rate: "+rate);
-            //     // for(var period in data)
-            //     // {
-            //     //     sub_data = data[period];
-            //     //     util.puts(period +
-            //     //         "\tCost: $"+printf("%0.2f",sub_data.cost) +
-            //     //         "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
-            //     //         "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
-            //     //         "");
-            //     // }
-
-            // }
-            res.end(sys.inspect(totals));
+            for(var rate in totals)
+            {
+                data = totals[rate];
+                res.write("Rate: "+rate+"\n");
+                for(var period in data)
+                {
+                    sub_data = data[period];
+                    res.write("\t"+ period +
+                        "\tCost: $"+printf("%0.2f",sub_data.cost) +
+                        "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
+                        "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
+                        "\n");
+                }
+            }
+            res.end();
         }
 
         var details = parser.detailsParser(report);
