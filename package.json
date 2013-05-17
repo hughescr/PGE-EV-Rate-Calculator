@@ -42,7 +42,8 @@
     "formidable": "~1.0",
     "node-xml": "~1.0",
     "printf": "~0.1",
-    "optimist": "~0.4"
+    "optimist": "~0.4",
+    "express": "~3.2"
   },
 
   "devDependencies": {},

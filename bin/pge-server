@@ -8,188 +8,105 @@ var formidable = require('formidable');
 var http = require('http');
 var sys = require('sys');
 var fs = require('fs');
+var express = require('express');
+var app = express();
 
 var serverPort = process.env.npm_package_config_port || 8080;
 
-http.createServer(function(req, res) {
-  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
-    // parse a file upload
-    var form = new formidable.IncomingForm();
-    form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'content-type': 'text/plain'});
-    });
-
-    var argv = {};
-
-    form.on('progress', function(bytesReceived, bytesExpected)
+app.use('/upload', function(req, res, next)
+{
+    if (req.method.toLowerCase() == 'post')
     {
-//        console.log(100*bytesReceived/bytesExpected,"%");
-    });
+        var form = new formidable.IncomingForm();
 
-    form.on('field', function(name, value)
-    {
-        argv[name] = value;
-    });
+        form.parse(req, function(err, fields, files) {});
 
-    form.on('file', function(name, file)
-    {
-        fs.unlink(file.path);
-    });
+        var argv = {};
 
-    var parser = undefined;
-
-    form.onPart = function(part) {
-
-      if (!part.filename) {
-        // let formidable handle all non-file parts
-        form.handlePart(part);
-        return;
-      }
-
-      if(!parser)
-      {
-        parser = pge_parse.PGEParser(
-                        argv.a,
-                        argv.b,
-                        argv.c,
-                        argv.m,
-                        argv.s ? new Date(argv.s) : undefined,
-                        argv.e ? new Date(argv.e).addDays(1) : undefined
-                    );
-      }
-
-      if(part.name == 'summary') {
-        var summary = parser.summaryParser(function() {});
-
-        part.addListener('data', function(chunk) {
-            summary.parseString(chunk);
+        form.on('field', function(name, value)
+        {
+            argv[name] = value;
         });
 
-      }
-
-      if(part.name == 'details') {
-        function report(totals)
+        form.on('file', function(name, file)
         {
-            // Print out report
-            for(var rate in totals)
+            fs.unlink(file.path);
+        });
+
+        var parser = undefined;
+
+        form.onPart = function(part)
+        {
+            // Part can be a form field, or a file
+            if (!part.filename)
             {
-                data = totals[rate];
-                res.write("<div class='rate' style='padding: 1em;'>Rate: "+rate);
-                for(var period in data)
-                {
-                    sub_data = data[period];
-                    res.write("<div class='subtotal' style='padding-left: 1em;'>"+ period +
-                        " Cost: $"+printf("%0.2f",sub_data.cost) +
-                        " Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
-                        " Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
-                        "</div>");
-                }
-                res.write("</div>");
+                // let formidable handle all non-file parts
+                form.handlePart(part);
+                return;
             }
-            res.end();
+
+            if(!parser)
+            {
+                parser = pge_parse.PGEParser(
+                    argv.a,
+                    argv.b,
+                    argv.c,
+                    argv.m,
+                    argv.s ? new Date(argv.s) : undefined,
+                    argv.e ? new Date(argv.e).addDays(1) : undefined
+                    );
+            }
+
+            if(part.name == 'summary')
+            {
+                var summary = parser.summaryParser(function() {});
+
+                part.addListener('data', function(chunk)
+                {
+                    summary.parseString(chunk);
+                });
+
+            }
+
+            if(part.name == 'details')
+            {
+                function report(totals)
+                {
+                    var response = "";
+                    // Print out report
+                    for(var rate in totals)
+                    {
+                        data = totals[rate];
+                        response += "<div class='rate'>Rate: " + rate;
+                        for(var period in data)
+                        {
+                            sub_data = data[period];
+                            response += "<div class='subtotal'>" + period +
+                            printf("<div class='cost'>Cost: <span class='money'>$%0.2f</span></div>",sub_data.cost) +
+                            printf("<div class='perkwh'>Per kWh: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.amount) +
+                            printf("<div class='perday'>Per day: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.numDays) +
+                            "</div>";
+                        }
+                        response += "</div>";
+                    }
+                    res.send(200, response);
+                }
+
+                var details = parser.detailsParser(report);
+
+                part.addListener('data', function(chunk)
+                {
+                    details.parseString(chunk);
+                });
+            }
         }
 
-        var details = parser.detailsParser(report);
-
-        part.addListener('data', function(chunk) {
-            details.parseString(chunk);
-        });
-      }
+        return;
     }
+});
 
-    // form.on('end', function()
-    // {
-    //     // We should really use node-xml parseString() repeatedly to parse in chunks as the upload comes in
+app.use(express.static(__dirname + '/../public'));
 
-    //     if(argv.S)
-    //     {
-    //         parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
-    //     } else {
-    //         details.parseFile(argv._[0]);
-    //     }
-    // });
-
-    return;
-  }
-
-  // show a file upload form
-  res.writeHead(200, {'content-type': 'text/html'});
-  res.end(
-    '<!doctype html>'+
-    '<head>'+
-    '<link href="http://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet" type="text/css">'+
-    '<title>PG&E Rate Calculator</title>'+
-    '<style>'+
-    'body { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; padding: 30px }'+
-    'form { width: 500px; background: #eee; border-radius: 10px; padding: 15px; line-height: 2em; }'+
-    'select { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; font-size: 120%; float: right; }'+
-    'input { font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight:300; font-size: 100%; float: right; }'+
-    '.submit { float: none; width: 100%; }'+
-    '.progress { position:relative; width:500px; border: 1px solid #ddd; margin: 15px; border-radius: 3px; }'+
-    '.bar { background-color: #eee; width:0%; height:1.75em; border-radius: 3px; }'+
-    '.percent { position:absolute; display:inline-block; top:3px; left:48%; }'+
-    '#status { position:relative; top:0px; left:0px; font-family: "Lucida Console", Monaco, monospace; }' +
-    '</style>'+
-    '</head>'+
-    '<body>'+
-        '<h1>PG&E Rate Calculator</h1>'+
-            '<form action="/upload" method="post" enctype="multipart/form-data">'+
-            '<label for="a">Home heating</label><select id="a" name="a"><option value="false">Gas/Other</option><option value="true">Electric</option></select><br />'+
-            '<label for="b">Baseline Territory</label><select id="b" name="b"><option value="P">P</option><option value="Q">Q</option><option value="R">R</option><option value="S">S</option><option value="T" selected>T</option><option value="V">V</option><option value="W">W</option><option value="X">X</option><option value="Y">Y</option><option value="Z">Z</option></select><br />'+
-            '<label for="c">Wh/mile</label><input type="text" id="c" name="c" size="4" maxlength="4" value="350" /><br />'+
-            '<label for="m">Miles per day</label><input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />'+
-            '<label for="summary">Billing Summary <span style="font-size: x-small;">[optional]</span></label><input type="file" id="summary" name="summary" /><br />'+
-            '<label for="details">Billing Details</label><input type="file" id="details" name="details" /><br />'+
-            '<input class="submit" type="submit" value="Calculate!" />'+
-        '</form>'+
-''+
-        '<div class="progress">'+
-            '<div class="bar"></div >'+
-            '<div class="percent">0%</div >'+
-        '</div>'+
-''+
-        '<div id="status"></div>'+
-''+
-    '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>'+
-    '<script src="http://malsup.github.com/jquery.form.js"></script>'+
-    '<script>'+
-    '(function() {'+
-''+
-    'var progress = $(".progress");'+
-    'progress.hide();'+
-    'var bar = $(".bar");'+
-    'var percent = $(".percent");'+
-    'var status = $("#status");'+
-''+
-    '$("form").ajaxForm({'+
-        'beforeSend: function() {'+
-            'status.empty();'+
-            'var percentVal = "0%";'+
-            'progress.slideDown();' +
-            'status.fadeOut();' +
-            'bar.width(percentVal);'+
-            'percent.html(percentVal);'+
-        '},'+
-        'uploadProgress: function(event, position, total, percentComplete) {'+
-            'var percentVal = percentComplete + "%";'+
-            'bar.width(percentVal);'+
-            'percent.html(percentVal);'+
-        '},'+
-        'success: function() {'+
-            'var percentVal = "100%";'+
-            'bar.width(percentVal);'+
-            'percent.html(percentVal);'+
-        '},'+
-        'complete: function(xhr) {'+
-            'progress.slideUp();' +
-            'status.fadeIn();' +
-            'status.html(xhr.responseText);'+
-        '}'+
-    '}); '+
-''+
-    '})();       '+
-    '</script></body></html>'
-        );
-}).listen(serverPort);
+app.listen(serverPort);
 
 console.log("Started server on port",serverPort);

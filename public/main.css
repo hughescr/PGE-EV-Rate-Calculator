@@ -1,0 +1,122 @@
+@import url(http://fonts.googleapis.com/css?family=Noto+Sans);
+
+body
+{
+    font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight:300;
+    padding: 30px;
+}
+
+.form
+{
+    float:left;
+    width: 500px;
+    background: #eee;
+    border-radius: 10px;
+    padding: 15px;
+    line-height: 2em;
+}
+
+select
+{
+    font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight:300;
+    font-size: 120%;
+    float: right;
+}
+
+input
+{
+    font-family: "Noto Sans", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight:300;
+    font-size: 100%;
+    float: right;
+}
+
+.progress
+{
+    position:absolute;
+    top:500px;
+    width:  500px;
+    border: 1px solid #ddd;
+    margin: 15px;
+    border-radius: 3px;
+}
+
+.bar
+{
+    background-color: #eee;
+    width:0%;
+    height:1.75em;
+    border-radius: 3px;
+}
+
+.percent
+{
+    position:absolute;
+    display:inline-block;
+    top:3px;
+    left:48%;
+}
+
+#status
+{
+    float: left;
+    margin-left:2em;
+    background: #eee;
+    border-radius: 10px;
+    padding: 1em;
+    width: 35em;
+}
+
+.rate
+{
+    font-size: 120%;
+    position: relative;
+    margin: 1em;
+}
+
+.subtotal
+{
+    font-size: 80%;
+    font-weight: 700;
+    display: block;
+    position: relative;
+    left: 1em;
+}
+
+.cost
+{
+    font-weight: 300;
+    display: inline;
+    position: absolute;
+    left: 7em;
+    float: right;
+    width: 10em;
+}
+
+.perkwh
+{
+    font-weight: 300;
+    display: inline;
+    position: absolute;
+    left: 16em;
+    float: right;
+    width: 10em;
+}
+
+.perday
+{
+    font-weight: 300;
+    display: inline;
+    position: absolute;
+    left: 25em;
+    float: right;
+    width: 10em;
+}
+
+.money
+{
+    position: absolute;
+    right: 2em;
+}
