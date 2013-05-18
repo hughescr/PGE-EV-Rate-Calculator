@@ -2,11 +2,8 @@
 
 var pge_parse = require('pge-analyzer');
 var printf = require('printf');
-require('date-utils');
 
 var formidable = require('formidable');
-var http = require('http');
-var sys = require('sys');
 var fs = require('fs');
 var express = require('express');
 var app = express();
@@ -30,6 +27,7 @@ app.use('/upload', function(req, res, next)
 
         form.on('file', function(name, file)
         {
+            // No need to keep the temp files around
             fs.unlink(file.path);
         });
 
@@ -52,8 +50,7 @@ app.use('/upload', function(req, res, next)
                     argv.b,
                     argv.c,
                     argv.m,
-                    argv.s ? new Date(argv.s) : undefined,
-                    argv.e ? new Date(argv.e).addDays(1) : undefined
+                    argv.p ? new Date(argv.p) : undefined
                     );
             }
 
