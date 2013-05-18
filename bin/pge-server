@@ -10,6 +10,9 @@ var app = express();
 
 var serverPort = process.env.npm_package_config_port || 8080;
 
+app.use(express.logger());
+app.use(express.compress());
+
 app.use('/upload', function(req, res, next)
 {
     if (req.method.toLowerCase() == 'post')
