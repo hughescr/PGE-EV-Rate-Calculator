@@ -2,7 +2,6 @@
 
 var pge_parse = require('pge-analyzer');
 var printf = require('printf');
-require('date-utils');
 
 var formidable = require('formidable');
 var fs = require('fs');
@@ -51,8 +50,7 @@ app.use('/upload', function(req, res, next)
                     argv.b,
                     argv.c,
                     argv.m,
-                    argv.s ? new Date(argv.s) : undefined,
-                    argv.e ? new Date(argv.e).addDays(1) : undefined
+                    argv.p ? new Date(argv.p) : undefined
                     );
             }
 

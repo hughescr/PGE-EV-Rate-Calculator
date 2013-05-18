@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var pge_parse = require('pge-analyzer');
-require('date-utils');
 var printf = require('printf');
 
 var argv = require('optimist')
@@ -13,16 +12,14 @@ var argv = require('optimist')
     .default('b', 'T')
     .alias('b','baseline-territory')
     .describe('b',"Baseline territory ['P'..'Z'] from http://bit.ly/12kMV2l")
-    .default('c', 350)
+    .default('c', 380)
     .alias('c','Wh-per-mile')
     .describe('c','How many Wh per mile do you get')
     .default('m', 50)
     .alias('m','miles-per-day')
-    .describe('m','How many electric car miles per day do you want to add at off-peak charging')
-    .alias('s','start-date')
-    .describe('s','Ignore any data before this date')
-    .alias('e','end-data')
-    .describe('e','Ignore any data after this date')
+    .describe('m','How many electric car miles per day do you drive?')
+    .alias('p','purchase-date')
+    .describe('p','What date did you start plugging in your car?')
     .alias('S','summary')
     .describe('S','Summary bill data to obtain billing start/stop periods')
     .wrap(80)
@@ -33,8 +30,7 @@ var parser = pge_parse.PGEParser(
                         argv.b,
                         argv.c,
                         argv.m,
-                        argv.s ? new Date(argv.s) : undefined,
-                        argv.e ? new Date(argv.e).addDays(1) : undefined
+                        argv.p ? new Date(argv.p) : undefined
                     );
 
 function report(totals)
