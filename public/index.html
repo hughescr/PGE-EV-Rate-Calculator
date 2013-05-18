@@ -32,8 +32,12 @@
                         <option value="Z">Z</option>
                     </select><br />
 
-                    <label for="c">Wh/mile</label>
-                    <input type="text" id="c" name="c" size="4" maxlength="4" value="350" /><br />
+                    <label for="c">Car Model</label>
+                    <select id="c" name="c">
+                        <option value="380">Tesla Model S (85kWh)</option>
+                        <option value="350">Tesla Model S (60kWh)</option>
+                        <option value="290">Nissan Leaf</option>
+                    </select><br />
 
                     <label for="p">Date car first plugged in</label>
                     <input type="text" id="p" name="p" size="10" maxlength="10" /><br />
@@ -41,10 +45,10 @@
                     <label for="m">Miles per day</label>
                     <input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />
 
-                    <label for="summary">Billing Summary <span style="font-size: x-small;">[optional]</span></label>
+                    <label for="summary">Billing Summary Data<span style="font-size: x-small;">[optional]</span></label>
                     <input type="file" id="summary" name="summary" />
 
-                    <label for="details">Billing Details</label>
+                    <label for="details">Billing Detailed Data</label>
                     <input type="file" id="details" name="details" />
 
                     <input class="submit" type="submit" value="Calculate!" />
