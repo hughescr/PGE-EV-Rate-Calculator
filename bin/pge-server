@@ -5,8 +5,6 @@ var printf = require('printf');
 require('date-utils');
 
 var formidable = require('formidable');
-var http = require('http');
-var sys = require('sys');
 var fs = require('fs');
 var express = require('express');
 var app = express();
@@ -30,6 +28,7 @@ app.use('/upload', function(req, res, next)
 
         form.on('file', function(name, file)
         {
+            // No need to keep the temp files around
             fs.unlink(file.path);
         });
 
