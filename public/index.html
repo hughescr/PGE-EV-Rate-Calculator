@@ -1,9 +1,9 @@
 <!doctype html>
 <html>
     <head>
+        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
         <link href="main.css" rel="stylesheet" type="text/css" />
         <link href="enhanced.css" rel="stylesheet" type="text/css" />
-        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css"  rel="stylesheet" type="text/css" />
         <title>PG&amp;E Rate Calculator</title>
     </head>
 
@@ -18,8 +18,8 @@
                         <option value="true">Electric</option>
                     </select><br />
 
-                    <label for="b">Baseline Territory</label>
-                    <select id="b" name="b">
+                    <label popup="baseline" for="b">Baseline Territory</label>
+                    <select popup="baseline" id="b" name="b">
                         <option value="P">P</option>
                         <option value="Q">Q</option>
                         <option value="R">R</option>
@@ -45,10 +45,10 @@
                     <label for="m">Miles per day</label>
                     <input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />
 
-                    <label for="summary">Billing Summary Data<span style="font-size: x-small;">[optional]</span></label>
+                    <label title="Select your summary billing data XML file downloaded from PG&amp;E&apos;s website" for="summary">Billing Summary Data<span style="font-size: x-small;">[optional]</span></label>
                     <input type="file" id="summary" name="summary" />
 
-                    <label for="details">Billing Detailed Data</label>
+                    <label title="Select your details billing XML data file downloaded from PG&amp;E&apos;s website" for="details">Billing Detailed Data</label>
                     <input type="file" id="details" name="details" />
 
                     <input class="submit" type="submit" value="Calculate!" />
@@ -71,7 +71,12 @@
             $(document).ready(function() {
                 $('#summary').customFileInput();
                 $('#details').customFileInput();
-                $('#p').datepicker({ showAnim: 'slideDown', dateFormat: 'yy-mm-dd' });
+                $('#p').datepicker({ showAnim: 'slideDown', dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true, showButtonPanel: true });
+                $('[popup]').tooltip({
+                    items: '[popup]',
+                    content: '<img class="baselinemap" src="http://www.pge.com/includes/images/myhome/customerservice/financialassistance/medicalbaseline/understand/baseterrp.gif" />'
+                });
+                $('[title]').tooltip();
 
                 var progress = $(".progress");
                 progress.hide();

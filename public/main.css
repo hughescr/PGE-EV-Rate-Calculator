@@ -120,3 +120,14 @@ input
     position: absolute;
     right: 2em;
 }
+
+.ui-tooltip
+{
+    max-width: 800px;
+}
+
+label[popup], label[title]
+{
+    text-decoration: none;
+    border-bottom: dashed 1px;
+}
