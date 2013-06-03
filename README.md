@@ -14,7 +14,7 @@ First, install [node.js](http://nodejs.org/)
 
 Then, install this package:
 
-    npm install pge-parse
+    sudo npm install -g pge-analyzer
 
 ## PG&E Data Download
 
