@@ -32,11 +32,18 @@
                         <option value="Z">Z</option>
                     </select><br />
 
-                    <label for="c">Car Model</label>
-                    <select id="c" name="c">
+                    <label epa="Data from EPA website" for="c">Car Model</label>
+                    <select epa="Data from EPA website" id="c" name="c">
+                        <option value="290">Fiat 500e</option>
+                        <option value="320">Ford Focus EV</option>
+                        <option value="290">Honda Fit EV</option>
+                        <option value="300">Mitsubishi i-MiEV</option>
+                        <option value="290">Nissan Leaf</option>
+                        <option value="280">Scion iQ EV</option>
+                        <option value="320">Smart fortwo EV</option>
                         <option value="380">Tesla Model S (85kWh)</option>
                         <option value="350">Tesla Model S (60kWh)</option>
-                        <option value="290">Nissan Leaf</option>
+                        <option value="440">Toyota RAV4 EV</option>
                     </select><br />
 
                     <label for="p">Date car first plugged in</label>
@@ -75,6 +82,10 @@
                 $('[popup]').tooltip({
                     items: '[popup]',
                     content: '<img class="baselinemap" src="http://www.pge.com/includes/images/myhome/customerservice/financialassistance/medicalbaseline/understand/baseterrp.gif" />'
+                });
+                $('[epa]').tooltip({
+                    items: '[epa]',
+                    content: 'Data from <a href="http://www.fueleconomy.gov/feg/PowerSearch.do?action=Cars&path=3&year1=2012&year2=2014&vtype=Electric&srchtyp=newAfv&pageno=1&sortBy=Comb&tabView=0&rowLimit=200">EPA website</a>'
                 });
                 $('[title]').tooltip();
 
