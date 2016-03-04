@@ -1,55 +1,57 @@
 {
   "name": "pge-analyzer",
-  "version": "1.0.3",
-
   "description": "Analyze PG&E smart meter data and calculate cost under different rate plans",
-
-  "keywords": [ "pge", "electricity", "meter", "ev", "rate" ],
-
+  "version": "1.0.3",
+  "keywords": [
+    "pge",
+    "electricity",
+    "meter",
+    "ev",
+    "rate"
+  ],
   "homepage": "https://github.com/hughescr/PGE-EV-Rate-Calculator",
-
   "bugs": {
     "url": "https://github.com/hughescr/PGE-EV-Rate-Calculator/issues"
   },
-
-  "license": "BSD",
-
+  "license": "BSD-3-Clause",
   "author": "Craig Hughes <craig.npm@rungie.com> (https://npmjs.org/~hughescr)",
-
-  "main": "./lib/pge-parse.js",
-
-  "directories": {
-    "bin": "./bin",
-    "lib": "./lib"
-  },
-
   "repository": {
     "type": "git",
     "url": "git://github.com/hughescr/PGE-EV-Rate-Calculator.git"
   },
-
-  "scripts": {
-    "start": "pge-server",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "bin": {
+    "pge-server": "./bin/pge-server",
+    "pge-analyzer": "./bin/pge-analyzer"
   },
-
+  "main": "./lib/pge-parse.js",
+  "scripts": {
+    "start": "bin/pge-server",
+    "test": "grunt lint",
+    "postversion": "git commit -m \"Bump package version to $npm_package_version\" package.json; git flow release start $npm_package_version; git flow release finish -m $npm_package_version $npm_package_version; git checkout develop; git merge master"
+  },
   "config": {
     "port": "8080"
   },
-
   "dependencies": {
+    "compression": "~1.6.1",
     "date-utils": "~1.2",
+    "express": "~4.13",
     "formidable": "~1.0",
+    "moment": "~2.11.2",
+    "morgan": "~1.7.0",
     "node-xml": "~1.0",
-    "printf": "~0.1",
-    "optimist": "~0.4",
-    "express": "~3.2"
+    "optimist": "~0.6",
+    "printf": "~0.2",
+    "serve-static": "~1.10.2"
   },
-
-  "devDependencies": {},
-
   "readmeFilename": "README.md",
-
-  "gitHead": "63d9a2edd7c1398d95964b9a36f3730ca7cc286d"
-
+  "gitHead": "63d9a2edd7c1398d95964b9a36f3730ca7cc286d",
+  "devDependencies": {
+    "eslint": "~2.2.0",
+    "eslint-plugin-promise": "~1.1.0",
+    "grunt": "~0.4.5",
+    "grunt-cli": "~0.1.13",
+    "grunt-eslint": "~18.0.0",
+    "load-grunt-tasks": "~3.4.1"
+  }
 }

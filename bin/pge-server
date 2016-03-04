@@ -1,27 +1,93 @@
 #!/usr/bin/env node
+'use strict';
 
-var pge_parse = require('pge-analyzer');
-var printf = require('printf');
+let pge_parse = require('../lib/pge-parse');
+let printf = require('printf');
 
-var formidable = require('formidable');
-var fs = require('fs');
-var express = require('express');
-var app = express();
+let formidable = require('formidable');
+let fs = require('fs');
+let express = require('express');
+let compression = require('compression');
+let serveStatic    = require('serve-static');
+let path = require('path');
+let app = express();
+app.use(compression());
 
-var serverPort = process.env.npm_package_config_port || 8080;
+let serverPort = process.env.npm_package_config_port || 8080;
 
-app.use(express.logger());
-app.use(express.compress());
+let moment = require('moment');
+let morgan = require('morgan');
 
-app.use('/upload', function(req, res, next)
+let MOMENT_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS ZZ';
+
+function MOMENT_FORMAT_NOW()
 {
-    if (req.method.toLowerCase() == 'post')
+    return moment().utc().format(MOMENT_FORMAT);
+}
+
+morgan.token('timestamp', MOMENT_FORMAT_NOW);
+morgan.token('route', function(req) { return req.route && req.route.path || '***'; });
+morgan.token('user', function(req) { return req.user && req.user._id || '-'; });
+
+morgan.format('mydev', function(tokens, req, res)
+{
+    let status = res.statusCode;
+    let color = 32;
+
+    if(status >= 500) { color = 31; }
+    else if(status >= 400) { color = 33; }
+    else if(status >= 300) { color = 36; }
+
+    // Build up format string for Morgan
+    let fn = '[:timestamp] \x1b[90m:method :url :route \x1b[' + color + 'm:status \x1b[90m' + (new Date() - req._startTime) + 'ms :referrer \x1b[0m[:remote-addr] ~:user~';
+    fn = '  return "' + fn.replace(/:([-\w]{2,})(?:\[([^\]]+)\])?/g, function(_, name, arg)
     {
-        var form = new formidable.IncomingForm();
+        return '"\n    + (tokens["' + name + '"](req, res, ' + String(JSON.stringify(arg)) + ') || "-") + "';
+    }) + '";';
+    // jshint evil: true
+    fn = new Function('tokens, req, res', fn);
+    // jshint evil: false
 
-        form.parse(req, function(err, fields, files) {});
+    return fn(tokens, req, res);
+});
 
-        var argv = {};
+let morganLogger = morgan('mydev');
+
+app.use(morganLogger);
+
+app.use(serveStatic(path.join(__dirname, '..', 'public')));
+
+function report(res, totals)
+{
+    let response = '';
+    // Print out report
+    for(let rate in totals)
+    {
+        let data = totals[rate];
+        response += '<div class="rate">Rate: ' + rate;
+        for(let period in data)
+        {
+            let sub_data = data[period];
+            response += '<div class="subtotal">' + period +
+            printf('<div class="cost">Cost: <span class="money">$%0.2f</span></div>', sub_data.cost) +
+            printf('<div class="perkwh">Per kWh: <span class="money">$%0.2f</span></div>', sub_data.cost / sub_data.amount) +
+            printf('<div class="perday">Per day: <span class="money">$%0.2f</span></div>', sub_data.cost / sub_data.numDays) +
+            '</div>';
+        }
+        response += '</div>';
+    }
+    res.send(200, response);
+}
+
+app.use('/upload', function(req, res)
+{
+    if(req.method.toLowerCase() == 'post')
+    {
+        let form = new formidable.IncomingForm();
+
+        form.parse(req, function() {});
+
+        let argv = {};
 
         form.on('field', function(name, value)
         {
@@ -34,12 +100,12 @@ app.use('/upload', function(req, res, next)
             fs.unlink(file.path);
         });
 
-        var parser = undefined;
+        let parser = undefined;
 
         form.onPart = function(part)
         {
             // Part can be a form field, or a file
-            if (!part.filename)
+            if(!part.filename)
             {
                 // let formidable handle all non-file parts
                 form.handlePart(part);
@@ -59,54 +125,29 @@ app.use('/upload', function(req, res, next)
 
             if(part.name == 'summary')
             {
-                var summary = parser.summaryParser(function() {});
+                let summary = parser.summaryParser(function() {});
 
                 part.addListener('data', function(chunk)
                 {
                     summary.parseString(chunk);
                 });
-
             }
 
             if(part.name == 'details')
             {
-                function report(totals)
-                {
-                    var response = "";
-                    // Print out report
-                    for(var rate in totals)
-                    {
-                        data = totals[rate];
-                        response += "<div class='rate'>Rate: " + rate;
-                        for(var period in data)
-                        {
-                            sub_data = data[period];
-                            response += "<div class='subtotal'>" + period +
-                            printf("<div class='cost'>Cost: <span class='money'>$%0.2f</span></div>",sub_data.cost) +
-                            printf("<div class='perkwh'>Per kWh: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.amount) +
-                            printf("<div class='perday'>Per day: <span class='money'>$%0.2f</span></div>",sub_data.cost/sub_data.numDays) +
-                            "</div>";
-                        }
-                        response += "</div>";
-                    }
-                    res.send(200, response);
-                }
-
-                var details = parser.detailsParser(report);
+                let details = parser.detailsParser(report.bind(null, res));
 
                 part.addListener('data', function(chunk)
                 {
                     details.parseString(chunk);
                 });
             }
-        }
+        };
 
         return;
     }
 });
 
-app.use(express.static(__dirname + '/../public'));
-
 app.listen(serverPort);
 
-console.log("Started server on port",serverPort);
+console.log('Started server on port', serverPort);
