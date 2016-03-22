@@ -1,3 +1,5 @@
+# NOTE: PG&E has completely changed how they do downloading of your data; this project needs a major update to get the new data.  I'll see about doing that, maybe.  More likely as PCE is kicking PG&E out of San Mateo County, I'll just make sure it works with whatever PCE sets up.
+
 # Overview
 
 This is a little XML parsing app I wrote to try and estimate whether PG&E customers are better off on the E9-A or the EV-A rate plan.

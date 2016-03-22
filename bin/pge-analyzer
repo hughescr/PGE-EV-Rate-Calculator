@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var pge_parse = require('pge-analyzer');
+var pge_parse = require('../lib/pge-parse');
 var printf = require('printf');
 
 var argv = require('optimist')
