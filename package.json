@@ -47,10 +47,10 @@
   "readmeFilename": "README.md",
   "gitHead": "63d9a2edd7c1398d95964b9a36f3730ca7cc286d",
   "devDependencies": {
-    "eslint": "~2.5.1",
+    "eslint": "~2.6.0",
     "eslint-plugin-promise": "~1.1.0",
     "grunt": "~0.4.5",
-    "grunt-cli": "~1.1.0",
+    "grunt-cli": "~1.2.0",
     "grunt-eslint": "~18.0.0",
     "load-grunt-tasks": "~3.4.1"
   }
