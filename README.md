@@ -21,7 +21,7 @@ Then, install this package:
 ## PG&E Data Download
 
 1. Log in to PG&E
-2. Go to "My Usage"
+2. Click the "Save Energy & Money" tab, and choose "Your Usage & Tools", and sub-menu item "Usage Analysis"
 3. Click "Green Button Download My Data" at the bottom right
 4. Under "For developers and third parties (.xml file)", choose "Export usage for a range of days" and choose the maximum range it allows you.
 5. Your browser will now download a ZIP file called something like pge_interval_data_2012-03-30_to_2013-03-13.zip
@@ -79,13 +79,6 @@ with no arguments to get help information on how to change from those defaults.
 
 # Resources
 
-The program uses data gathered from the following PG&E documents:
+The program uses data gathered from the following PG&E documents (as of 2016-04-04):
 
-* [Electric baseline regions](http://www.pge.com/tariffs/tm2/pdf/ELEC_PRELIM_A.pdf)
-
-* [E9 rate plan](http://www.pge.com/tariffs/tm2/pdf/ELEC_SCHEDS_E-9.pdf)
-
-* [EV rate plan proposal](http://www.pge.com/nots/rates/tariffs/tm2/pdf/ELEC_3910-E-A.pdf)
-
-* [2012 meter reading schedule](http://www.pge.com/includes/docs/pdfs/shared/customerservice/meter/readingschedule/mtr_schedule.pdf)
-* [2013 meter reading schedule](http://www.pge.com/includes/docs/pdfs/shared/customerservice/meter/readingschedule/mtr_schedule_2013.pdf)
+* [PG&E Tariff Data](http://www.pge.com/tariffs/ERS.SHTML)

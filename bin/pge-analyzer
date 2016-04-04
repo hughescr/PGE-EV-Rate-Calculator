@@ -1,31 +1,33 @@
 #!/usr/bin/env node
+'use strict';
 
-var pge_parse = require('../lib/pge-parse');
-var printf = require('printf');
+let pge_parse = require('../lib/pge-parse');
+let printf    = require('printf');
+let util      = require('util');
 
-var argv = require('optimist')
+let argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
     .demand(1)
     .boolean('a')
-    .alias('a','all-electric')
-    .describe('a','Use the "all electric" baseline numbers -- specify this option if your heating is electric instead of gas')
+    .alias('a', 'all-electric')
+    .describe('a', 'Use the "all electric" baseline numbers -- specify this option if your heating is electric instead of gas')
     .default('b', 'T')
-    .alias('b','baseline-territory')
-    .describe('b',"Baseline territory ['P'..'Z'] from http://bit.ly/12kMV2l")
+    .alias('b', 'baseline-territory')
+    .describe('b', "Baseline territory ['P'..'Z'] from http://bit.ly/12kMV2l")
     .default('c', 380)
-    .alias('c','Wh-per-mile')
-    .describe('c','How many Wh per mile do you get')
+    .alias('c', 'Wh-per-mile')
+    .describe('c', 'How many Wh per mile do you get')
     .default('m', 50)
-    .alias('m','miles-per-day')
-    .describe('m','How many electric car miles per day do you drive?')
-    .alias('p','purchase-date')
-    .describe('p','What date did you start plugging in your car?')
-    .alias('S','summary')
-    .describe('S','Summary bill data to obtain billing start/stop periods')
+    .alias('m', 'miles-per-day')
+    .describe('m', 'How many electric car miles per day do you drive?')
+    .alias('p', 'purchase-date')
+    .describe('p', 'What date did you start plugging in your car?')
+    .alias('S', 'summary')
+    .describe('S', 'Summary bill data to obtain billing start/stop periods')
     .wrap(80)
-    .argv
+    .argv;
 
-var parser = pge_parse.PGEParser(
+let parser = pge_parse.PGEParser(
                         argv.a,
                         argv.b,
                         argv.c,
@@ -38,16 +40,16 @@ function report(totals)
     // Print out report
     for(var rate in totals)
     {
-        data = totals[rate];
-        util.puts("Rate: "+rate);
+        let data = totals[rate];
+        util.puts('Rate: ' + rate);
         for(var period in data)
         {
-            sub_data = data[period];
+            let sub_data = data[period];
             util.puts(period +
-                "\tCost: $"+printf("%0.2f",sub_data.cost) +
-                "\t Per kWh: $"+printf("%0.2f",sub_data.cost/sub_data.amount) +
-                "\t Per day: $"+printf("%0.2f",sub_data.cost/sub_data.numDays) +
-                "");
+                '\tCost: $' + printf('%0.2f', sub_data.cost) +
+                '\t Per kWh: $' + printf('%0.2f', sub_data.cost / sub_data.amount) +
+                '\t Per day: $' + printf('%0.2f', sub_data.cost / sub_data.numDays)
+            );
         }
     }
 }
@@ -56,8 +58,10 @@ var details = parser.detailsParser(report);
 
 if(argv.S)
 {
-    parser.summaryParser(function() { details.parseFile(argv._[0])}).parseFile(argv.S);
-} else {
+    parser.summaryParser(function() { details.parseFile(argv._[0]); }).parseFile(argv.S);
+}
+else
+{
     details.parseFile(argv._[0]);
 }
 
