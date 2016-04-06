@@ -3,7 +3,7 @@
 
 let pge_parse = require('../lib/pge-parse');
 let printf    = require('printf');
-let util      = require('util');
+let fs        = require('fs');
 
 let argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
@@ -41,11 +41,11 @@ function report(totals)
     for(var rate in totals)
     {
         let data = totals[rate];
-        util.puts('Rate: ' + rate);
+        console.log('Rate: ' + rate);
         for(var period in data)
         {
             let sub_data = data[period];
-            util.puts(period +
+            console.log(period +
                 '\tCost: $' + printf('%0.2f', sub_data.cost) +
                 '\t Per kWh: $' + printf('%0.2f', sub_data.cost / sub_data.amount) +
                 '\t Per day: $' + printf('%0.2f', sub_data.cost / sub_data.numDays)
@@ -58,10 +58,18 @@ var details = parser.detailsParser(report);
 
 if(argv.S)
 {
-    parser.summaryParser(function() { details.parseFile(argv._[0]); }).parseFile(argv.S);
+    let summaryParser = parser.summaryParser(function()
+    {
+        let detailsStream = fs.createReadStream(argv._[0]);
+        detailsStream.pipe(details);
+    });
+
+    let summaryStream = fs.createReadStream(argv.S);
+    summaryStream.pipe(summaryParser);
 }
 else
 {
-    details.parseFile(argv._[0]);
+    let detailsStream = fs.createReadStream(argv._[0]);
+    detailsStream.pipe(details);
 }
 
