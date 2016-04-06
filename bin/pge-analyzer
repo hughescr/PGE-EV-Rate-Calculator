@@ -3,7 +3,6 @@
 
 let pge_parse = require('../lib/pge-parse');
 let printf    = require('printf');
-let util      = require('util');
 
 let argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
@@ -41,11 +40,11 @@ function report(totals)
     for(var rate in totals)
     {
         let data = totals[rate];
-        util.puts('Rate: ' + rate);
+        console.log('Rate: ' + rate);
         for(var period in data)
         {
             let sub_data = data[period];
-            util.puts(period +
+            console.log(period +
                 '\tCost: $' + printf('%0.2f', sub_data.cost) +
                 '\t Per kWh: $' + printf('%0.2f', sub_data.cost / sub_data.amount) +
                 '\t Per day: $' + printf('%0.2f', sub_data.cost / sub_data.numDays)
