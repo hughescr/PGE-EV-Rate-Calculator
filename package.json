@@ -39,7 +39,7 @@
     "moment": "~2.12.0",
     "moment-timezone": "~0.5.3",
     "morgan": "~1.7.0",
-    "node-xml": "~1.0",
+    "node-expat": "~2.3.13",
     "optimist": "~0.6",
     "printf": "~0.2",
     "serve-static": "~1.10.2"
