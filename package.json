@@ -1,7 +1,7 @@
 {
   "name": "pge-analyzer",
   "description": "Analyze PG&E smart meter data and calculate cost under different rate plans",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "keywords": [
     "pge",
     "electricity",
