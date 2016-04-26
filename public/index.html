@@ -1,128 +1,124 @@
 <!doctype html>
-<html>
+<html lang='en'>
     <head>
-        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
-        <link href="main.css" rel="stylesheet" type="text/css" />
-        <link href="enhanced.css" rel="stylesheet" type="text/css" />
+        <meta charset='utf-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
+
+        <link href='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css' rel='stylesheet' type='text/css' />
+        <link href='//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/css/bootstrap-datepicker3.min.css' rel='stylesheet' type='text/css' />
+
+        <link href='main.css' rel='stylesheet' type='text/css' />
+
         <title>PG&amp;E Rate Calculator</title>
     </head>
 
     <body>
-        <div class="form">
-            <form action="/upload" method="post" enctype="multipart/form-data">
-                <fieldset>
-                    <legend>PG&amp;E Rate Calculator</legend>
-                    <label for="a">Home heating</label>
-                    <select id="a" name="a">
-                        <option value="false">Gas/Other</option>
-                        <option value="true">Electric</option>
-                    </select><br />
+        <div class='container'>
+            <form action='/upload' method='post' enctype='multipart/form-data'>
+                <h1>PG&amp;E Rate Calculator</h1>
 
-                    <label popup="baseline" for="b">Baseline Territory</label>
-                    <select popup="baseline" id="b" name="b">
-                        <option value="P">P</option>
-                        <option value="Q">Q</option>
-                        <option value="R">R</option>
-                        <option value="S">S</option>
-                        <option value="T">T</option>
-                        <option value="V">V</option>
-                        <option value="W">W</option>
-                        <option value="X" selected>X</option>
-                        <option value="Y">Y</option>
-                        <option value="Z">Z</option>
-                    </select><br />
+                <div class='form-group row'>
+                    <div class='col-md-4'>
+                        <div class='row'>
+                            <label class='col-md-6' for='a'>Home heating</label>
+                            <div class='col-md-6'>
+                                <select class='form-control' id='a' name='a'>
+                                    <option value='false'>Gas/Other</option>
+                                    <option value='true'>Electric</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                    <label epa="Data from EPA website" for="c">Car Model</label>
-                    <select epa="Data from EPA website" id="c" name="c">
-                        <option value="290">Fiat 500e</option>
-                        <option value="320">Ford Focus EV</option>
-                        <option value="290">Honda Fit EV</option>
-                        <option value="300">Mitsubishi i-MiEV</option>
-                        <option value="290">Nissan Leaf</option>
-                        <option value="280">Scion iQ EV</option>
-                        <option value="320">Smart fortwo EV</option>
-                        <option value="380">Tesla Model S (85kWh)</option>
-                        <option value="350">Tesla Model S (60kWh)</option>
-                        <option value="440">Toyota RAV4 EV</option>
-                    </select><br />
+                    <div class='col-md-4'>
+                        <div class='row'>
+                            <label class='col-md-6' popup='baseline' for='b'>Baseline Territory</label>
+                            <div class='col-md-6'>
+                                <select class='form-control' popup='baseline' id='b' name='b'>
+                                    <option value='P'>P</option>
+                                    <option value='Q'>Q</option>
+                                    <option value='R'>R</option>
+                                    <option value='S'>S</option>
+                                    <option value='T'>T</option>
+                                    <option value='V'>V</option>
+                                    <option value='W'>W</option>
+                                    <option value='X' selected>X</option>
+                                    <option value='Y'>Y</option>
+                                    <option value='Z'>Z</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                    <label for="p">Date car first plugged in</label>
-                    <input type="text" id="p" name="p" size="10" maxlength="10" /><br />
+                    <div class='col-md-4'>
+                        <div class='row'>
+                            <label class='col-md-6' epa='Data from EPA website' for='c'>Car Model</label>
+                            <div class='col-md-6'>
+                                <select class='form-control' epa='Data from EPA website' id='c' name='c'>
+                                    <option value='290'>Fiat 500e</option>
+                                    <option value='320'>Ford Focus EV</option>
+                                    <option value='290'>Honda Fit EV</option>
+                                    <option value='300'>Mitsubishi i-MiEV</option>
+                                    <option value='290'>Nissan Leaf</option>
+                                    <option value='280'>Scion iQ EV</option>
+                                    <option value='320'>Smart fortwo EV</option>
+                                    <option value='380'>Tesla Model S (85kWh)</option>
+                                    <option value='350'>Tesla Model S (60kWh)</option>
+                                    <option value='440'>Toyota RAV4 EV</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                    <label for="m">Miles per day</label>
-                    <input type="text" id="m" name="m" size="4" maxlength="4" value="50" /><br />
+                <div class='form-group row'>
+                    <div class='col-md-4'>
+                        <div class='row'>
+                            <label class='col-md-6' for='p'>Date car first plugged in</label>
+                            <div class='col-md-6'>
+                                <input class='form-control' type='text' id='p' name='p' size='10' maxlength='10' placeholder='every day'/>
+                            </div>
+                        </div>
+                    </div>
 
-                    <label title="Select your summary billing data XML file downloaded from PG&amp;E&apos;s website" for="summary">Billing Summary Data<span style="font-size: x-small;">[optional]</span></label>
-                    <input type="file" id="summary" name="summary" />
+                    <div class='col-md-4'>
+                        <div class='row'>
+                            <label class='col-md-8' for='m'>Miles per day</label>
+                            <div class='col-md-4'>
+                                <input class='form-control' type='text' id='m' name='m' size='4' maxlength='4' placeholder='50' />
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                    <label title="Select your details billing XML data file downloaded from PG&amp;E&apos;s website" for="details">Billing Detailed Data</label>
-                    <input type="file" id="details" name="details" />
+                <div class='form-group row'>
+                    <div class='col-md-4'>
+                        <label class='form-control-label' data-toggle='tooltip' title='Select your summary billing data XML file downloaded from PG&amp;E&apos;s website' for='summary'>Billing Summary Data <small>[optional]</small></label>
+                        <input class='form-control-file' type='file' id='summary' name='summary' />
+                    </div>
 
-                    <input class="submit" type="submit" value="Calculate!" />
-                </fieldset>
+                    <div class='col-md-4'>
+                        <label class='form-control-label' data-toggle='tooltip' title='Select your details billing XML data file downloaded from PG&amp;E&apos;s website' for='details'>Billing Detailed Data</label>
+                        <input class='form-control-file' type='file' id='details' name='details' />
+                    </div>
+                </div>
+
+                <button type='submit' class='btn btn-primary'>Calculate!</button>
             </form>
+
+            <div class='progress'>
+                <div class='bar'></div>
+                <div class='percent'>0%</div >
+            </div>
+
+            <div id='status'></div>
         </div>
 
-        <div class="progress">
-            <div class="bar" />
-            <div class="percent">0%</div >
-        </div>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js'></script>
+        <script src='//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js'></script>
 
-        <div id="status" />
-
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js" />
-        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js" />
-        <script src="http://malsup.github.com/jquery.form.js" />
-        <script src="jQuery.fileinput.js" />
-        <script>
-            $(document).ready(function() {
-                $('#summary').customFileInput();
-                $('#details').customFileInput();
-                $('#p').datepicker({ showAnim: 'slideDown', dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true, showButtonPanel: true });
-                $('[popup]').tooltip({
-                    items: '[popup]',
-                    content: '<img class="baselinemap" src="http://www.pge.com/nots/rates/PGECZ_90Rev.pdf" />'
-                });
-                $('[epa]').tooltip({
-                    items: '[epa]',
-                    content: 'Data from <a href="http://www.fueleconomy.gov/feg/PowerSearch.do?action=Cars&path=3&year1=2012&year2=2014&vtype=Electric&srchtyp=newAfv&pageno=1&sortBy=Comb&tabView=0&rowLimit=200">EPA website</a>'
-                });
-                $('[title]').tooltip();
-
-                var progress = $(".progress");
-                progress.hide();
-                var bar = $(".bar");
-                var percent = $(".percent");
-                var status = $("#status");
-                status.hide();
-
-                $("form").ajaxForm(
-                {
-                    beforeSend: function() {
-                        status.empty();
-                        var percentVal = "0%";
-                        progress.slideDown();
-                        status.fadeOut();
-                        bar.width(percentVal);
-                        percent.html(percentVal);
-                    },
-                    uploadProgress: function(event, position, total, percentComplete) {
-                        var percentVal = percentComplete + "%";
-                        bar.width(percentVal);
-                        percent.html(percentVal);
-                    },
-                    success: function() {
-                        var percentVal = "100%";
-                        bar.width(percentVal);
-                        percent.html(percentVal);
-                    },
-                    complete: function(xhr) {
-                        progress.slideUp();
-                        status.fadeIn();
-                        status.html(xhr.responseText);
-                    }
-                });
-            });
-        </script>
+        <script src='main.js'></script>
     </body>
 </html>

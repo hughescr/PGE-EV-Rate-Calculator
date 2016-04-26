@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 'use strict';
 
-let pge_parse = require('../lib/pge-parse');
-let printf = require('printf');
+const pge_parse   = require('../lib/pge-parse');
 
-let formidable = require('formidable');
-let fs = require('fs');
-let express = require('express');
-let compression = require('compression');
-let serveStatic    = require('serve-static');
-let path = require('path');
-let app = express();
+const printf      = require('printf');
+const path        = require('path');
+
+const app         = require('express')();
+const compression = require('compression');
+const serveStatic = require('serve-static');
+const formidable  = require('formidable');
+const morgan      = require('morgan');
+
+const moment      = require('moment');
+
 app.use(compression());
 
-let serverPort = process.env.npm_package_config_port || 8080;
+const serverPort = process.env.npm_package_config_port || 8080;
 
-let moment = require('moment');
-let morgan = require('morgan');
-
-let MOMENT_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS ZZ';
+const MOMENT_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS ZZ';
 
 function MOMENT_FORMAT_NOW()
 {
@@ -27,39 +27,37 @@ function MOMENT_FORMAT_NOW()
 
 morgan.token('timestamp', MOMENT_FORMAT_NOW);
 morgan.token('route', function(req) { return req.route && req.route.path || '***'; });
-morgan.token('user', function(req) { return req.user && req.user._id || '-'; });
+morgan.token('user', function(req)  { return req.user  && req.user._id   || '-'; });
 
-morgan.format('mydev', function(tokens, req, res)
+morgan.format('mydev', function myDevFormatLine(tokens, req, res)
 {
-    let status = res.statusCode;
-    let color = 32;
+    let status = res._header ? res.statusCode : undefined;
 
-    if(status >= 500) { color = 31; }
-    else if(status >= 400) { color = 33; }
-    else if(status >= 300) { color = 36; }
+    // get status color
+    let color = 32; // green
+
+    if(status >= 500) { color = 31; } // red
+    else if(status >= 400) { color = 33; } // yellow
+    else if(status >= 300) { color = 36; } // cyan
 
     // Build up format string for Morgan
-    let fn = '[:timestamp] \x1b[90m:method :url :route \x1b[' + color + 'm:status \x1b[90m' + (new Date() - req._startTime) + 'ms :referrer \x1b[0m[:remote-addr] ~:user~';
-    fn = '  return "' + fn.replace(/:([-\w]{2,})(?:\[([^\]]+)\])?/g, function(_, name, arg)
+    let fn = myDevFormatLine[color]; // Cache the format lines so we don't have to keep recompiling
+    if(!fn)
     {
-        return '"\n    + (tokens["' + name + '"](req, res, ' + String(JSON.stringify(arg)) + ') || "-") + "';
-    }) + '";';
-    // jshint evil: true
-    fn = new Function('tokens, req, res', fn);
-    // jshint evil: false
+        // compile
+        fn = myDevFormatLine[color] = morgan.compile('[:timestamp] \x1b[90m:method :url :route \x1b[' + color + 'm:status \x1b[90m:response-time[3]ms :referrer \x1b[0m[:remote-addr] ~:user~');
+    }
 
     return fn(tokens, req, res);
 });
 
-let morganLogger = morgan('mydev');
-
-app.use(morganLogger);
+app.use(morgan('mydev'));
 
 app.use(serveStatic(path.join(__dirname, '..', 'public')));
 
 function report(res, totals)
 {
-    let response = '';
+    let response = '<html><head><link rel="stylesheet" href="main.css"></link></head><body>';
     // Print out report
     for(let rate in totals)
     {
@@ -74,78 +72,59 @@ function report(res, totals)
             printf('<div class="perday">Per day: <span class="money">$%0.2f</span></div>', sub_data.cost / sub_data.numDays) +
             '</div>';
         }
-        response += '</div>';
+        response += '</div></body></html>';
     }
-    res.send(200, response);
+    res.status(200).send(response);
 }
 
-app.use('/upload', function(req, res)
+app.post('/upload', function(req, res)
 {
-    if(req.method.toLowerCase() == 'post')
+    let form = new formidable.IncomingForm();
+
+    let argv = {};
+
+    form.on('field', function(name, value)
     {
-        let form = new formidable.IncomingForm();
+        argv[name] = value;
+    });
 
-        form.parse(req, function() {});
+    let parser = undefined;
 
-        let argv = {};
-
-        form.on('field', function(name, value)
+    form.onPart = function(part)
+    {
+        // Part can be a form field, or a file
+        if(!part.filename)
         {
-            argv[name] = value;
-        });
+            // let formidable handle all non-file parts
+            form.handlePart(part);
+            return;
+        }
 
-        form.on('file', function(name, file)
+        if(!parser)
         {
-            // No need to keep the temp files around
-            fs.unlink(file.path);
-        });
+            parser = pge_parse.PGEParser(
+                argv.a,
+                argv.b,
+                argv.c,
+                argv.m,
+                argv.p ? new Date(argv.p) : undefined
+            );
+        }
 
-        let parser = undefined;
-
-        form.onPart = function(part)
+        if(part.name == 'summary')
         {
-            // Part can be a form field, or a file
-            if(!part.filename)
-            {
-                // let formidable handle all non-file parts
-                form.handlePart(part);
-                return;
-            }
+            let summary = parser.summaryParser(function() {});
+            part.pipe(summary);
+        }
 
-            if(!parser)
-            {
-                parser = pge_parse.PGEParser(
-                    argv.a,
-                    argv.b,
-                    argv.c,
-                    argv.m,
-                    argv.p ? new Date(argv.p) : undefined
-                    );
-            }
+        if(part.name == 'details')
+        {
+            let details = parser.detailsParser(report.bind(null, res));
+            part.pipe(details);
+        }
+    };
 
-            if(part.name == 'summary')
-            {
-                let summary = parser.summaryParser(function() {});
-
-                part.addListener('data', function(chunk)
-                {
-                    summary.parseString(chunk);
-                });
-            }
-
-            if(part.name == 'details')
-            {
-                let details = parser.detailsParser(report.bind(null, res));
-
-                part.addListener('data', function(chunk)
-                {
-                    details.parseString(chunk);
-                });
-            }
-        };
-
-        return;
-    }
+    form.parse(req);
 });
 
 app.listen(serverPort);

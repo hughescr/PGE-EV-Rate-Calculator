@@ -1,7 +1,7 @@
 {
   "name": "pge-analyzer",
   "description": "Analyze PG&E smart meter data and calculate cost under different rate plans",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "keywords": [
     "pge",
     "electricity",
@@ -36,7 +36,7 @@
     "compression": "~1.6.1",
     "express": "~4.13",
     "formidable": "~1.0",
-    "moment": "~2.12.0",
+    "moment": "~2.13.0",
     "moment-timezone": "~0.5.3",
     "morgan": "~1.7.0",
     "node-expat": "~2.3.13",
@@ -47,11 +47,11 @@
   "readmeFilename": "README.md",
   "gitHead": "63d9a2edd7c1398d95964b9a36f3730ca7cc286d",
   "devDependencies": {
-    "eslint": "~2.7.0",
+    "eslint": "~2.8.0",
     "eslint-plugin-promise": "~1.1.0",
     "grunt": "~1.0.1",
     "grunt-cli": "~1.2.0",
-    "grunt-eslint": "~18.0.0",
-    "load-grunt-tasks": "~3.4.1"
+    "grunt-eslint": "~18.1.0",
+    "load-grunt-tasks": "~3.5.0"
   }
 }

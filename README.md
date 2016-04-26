@@ -1,8 +1,6 @@
-# NOTE: PG&E has completely changed how they do downloading of your data; this project needs a major update to get the new data.  I'll see about doing that, maybe.  More likely as PCE is kicking PG&E out of San Mateo County, I'll just make sure it works with whatever PCE sets up.
-
 # Overview
 
-This is a little XML parsing app I wrote to try and estimate whether PG&E customers are better off on the E9-A or the EV-A rate plan.
+This is a little XML parsing app I wrote to try and estimate whether PG&E customers are better off on the E9-A or the EV-A rate plan.  It's also useful for comparing your existing/historic for other reasons too.
 
 It can use actual usage data downloaded from PG&E to calculate hopefully quite accurately for you.
 
@@ -43,6 +41,8 @@ Now run (obviously use your own electric XML filename):
 
 Output will look something like:
 
+    Rate: Bill
+    Total   Cost: $6564.19   Per kWh: $0.17  Per day: $5.99
     Rate: E1
     Summer  Cost: $7010.64   Per day: $11.49
     Winter  Cost: $9126.48   Per day: $13.58
@@ -68,7 +68,7 @@ Output will look something like:
     Winter  Cost: $4576.09   Per day: $6.81
     Total   Cost: $8328.86   Per day: $6.50
 
-Those numbers are basically the amount in dollars you would expect to have paid if you had been on the specified rate plan during the period covered by the data you downloaded.
+Those numbers are basically the amount in dollars you would expect to have paid if you had been on the specified rate plan during the period covered by the data you downloaded.  The first rate, called "Bill" is the cost data taken directly from your provided data file; somehow PG&E's cost data for any individual 1-hour interval in their logs doesn't seem to come out as a multiple of the KWh used times their rate: it's always off by some fraction, though generally not by much.  I suspect it's because of how their billing system does rounding or something, but I've not been able to determine any logic to it.
 
 There are some optional flags that default to "Where I live in San Mateo County", "50 miles per day electric driving" and "350 Wh/mile", and "I do heat my house with gas not electric".  You can type
 
