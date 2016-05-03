@@ -10,48 +10,15 @@ const app         = require('express')();
 const compression = require('compression');
 const serveStatic = require('serve-static');
 const formidable  = require('formidable');
-const morgan      = require('morgan');
-
-const moment      = require('moment');
-
-app.use(compression());
+const loggers     = require('@hughescr/logger');
+const loggerMW    = loggers.middleware;
+const logger      = loggers.logger;
 
 const serverPort = process.env.npm_package_config_port || 8080;
 
-const MOMENT_FORMAT = 'YYYY-MM-DD HH:mm:ss.SSS ZZ';
+app.use(compression());
 
-function MOMENT_FORMAT_NOW()
-{
-    return moment().utc().format(MOMENT_FORMAT);
-}
-
-morgan.token('timestamp', MOMENT_FORMAT_NOW);
-morgan.token('route', function(req) { return req.route && req.route.path || '***'; });
-morgan.token('user', function(req)  { return req.user  && req.user._id   || '-'; });
-
-morgan.format('mydev', function myDevFormatLine(tokens, req, res)
-{
-    let status = res._header ? res.statusCode : undefined;
-
-    // get status color
-    let color = 32; // green
-
-    if(status >= 500) { color = 31; } // red
-    else if(status >= 400) { color = 33; } // yellow
-    else if(status >= 300) { color = 36; } // cyan
-
-    // Build up format string for Morgan
-    let fn = myDevFormatLine[color]; // Cache the format lines so we don't have to keep recompiling
-    if(!fn)
-    {
-        // compile
-        fn = myDevFormatLine[color] = morgan.compile('[:timestamp] \x1b[90m:method :url :route \x1b[' + color + 'm:status \x1b[90m:response-time[3]ms :referrer \x1b[0m[:remote-addr] ~:user~');
-    }
-
-    return fn(tokens, req, res);
-});
-
-app.use(morgan('mydev'));
+app.use(loggerMW);
 
 app.use(serveStatic(path.join(__dirname, '..', 'public')));
 
@@ -59,13 +26,13 @@ function report(res, totals)
 {
     let response = '<html><head><link rel="stylesheet" href="main.css"></link></head><body>';
     // Print out report
-    for(let rate in totals)
+    for(const rate in totals)
     {
-        let data = totals[rate];
+        const data = totals[rate];
         response += '<div class="rate">Rate: ' + rate;
-        for(let period in data)
+        for(const period in data)
         {
-            let sub_data = data[period];
+            const sub_data = data[period];
             response += '<div class="subtotal">' + period +
             printf('<div class="cost">Cost: <span class="money">$%0.2f</span></div>', sub_data.cost) +
             printf('<div class="perkwh">Per kWh: <span class="money">$%0.2f</span></div>', sub_data.cost / sub_data.amount) +
@@ -77,13 +44,13 @@ function report(res, totals)
     res.status(200).send(response);
 }
 
-app.post('/upload', function(req, res)
+app.post('/upload', (req, res) =>
 {
-    let form = new formidable.IncomingForm();
+    const form = new formidable.IncomingForm();
 
-    let argv = {};
+    const argv = {};
 
-    form.on('field', function(name, value)
+    form.on('field', (name, value) =>
     {
         argv[name] = value;
     });
@@ -113,13 +80,13 @@ app.post('/upload', function(req, res)
 
         if(part.name == 'summary')
         {
-            let summary = parser.summaryParser(function() {});
+            const summary = parser.summaryParser(() => {});
             part.pipe(summary);
         }
 
         if(part.name == 'details')
         {
-            let details = parser.detailsParser(report.bind(null, res));
+            const details = parser.detailsParser(report.bind(null, res));
             part.pipe(details);
         }
     };
@@ -129,4 +96,4 @@ app.post('/upload', function(req, res)
 
 app.listen(serverPort);
 
-console.log('Started server on port', serverPort);
+logger.info('Started server on port', serverPort);
