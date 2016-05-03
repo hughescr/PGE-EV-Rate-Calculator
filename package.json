@@ -1,6 +1,9 @@
 {
   "name": "pge-analyzer",
   "description": "Analyze PG&E smart meter data and calculate cost under different rate plans",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "1.2.4",
   "keywords": [
     "pge",
@@ -33,6 +36,8 @@
     "port": "8080"
   },
   "dependencies": {
+    "@hughescr/logger": "^2.0.0",
+    "@hughescr/pge-rates": "^1.0.1",
     "compression": "~1.6.1",
     "express": "~4.13",
     "formidable": "~1.0",

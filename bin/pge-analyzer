@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-let pge_parse = require('../lib/pge-parse');
-let printf    = require('printf');
-let fs        = require('fs');
+const pge_parse = require('../lib/pge-parse');
+const printf    = require('printf');
+const fs        = require('fs');
+const logger    = require('@hughescr/logger').logger;
 
-let argv = require('optimist')
+const argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
     .demand(1)
     .boolean('a')
@@ -27,7 +28,7 @@ let argv = require('optimist')
     .wrap(80)
     .argv;
 
-let parser = pge_parse.PGEParser(
+const parser = pge_parse.PGEParser(
                         argv.a,
                         argv.b,
                         argv.c,
@@ -38,14 +39,14 @@ let parser = pge_parse.PGEParser(
 function report(totals)
 {
     // Print out report
-    for(var rate in totals)
+    for(const rate in totals)
     {
-        let data = totals[rate];
-        console.log('Rate: ' + rate);
-        for(var period in data)
+        const data = totals[rate];
+        logger.info('Rate: ' + rate);
+        for(const period in data)
         {
-            let sub_data = data[period];
-            console.log(period +
+            const sub_data = data[period];
+            logger.info(period +
                 '\tCost: $' + printf('%0.2f', sub_data.cost) +
                 '\t Per kWh: $' + printf('%0.2f', sub_data.cost / sub_data.amount) +
                 '\t Per day: $' + printf('%0.2f', sub_data.cost / sub_data.numDays)
@@ -54,22 +55,22 @@ function report(totals)
     }
 }
 
-var details = parser.detailsParser(report);
+const details = parser.detailsParser(report);
 
 if(argv.S)
 {
-    let summaryParser = parser.summaryParser(function()
+    const summaryParser = parser.summaryParser(() =>
     {
-        let detailsStream = fs.createReadStream(argv._[0]);
+        const detailsStream = fs.createReadStream(argv._[0]);
         detailsStream.pipe(details);
     });
 
-    let summaryStream = fs.createReadStream(argv.S);
+    const summaryStream = fs.createReadStream(argv.S);
     summaryStream.pipe(summaryParser);
 }
 else
 {
-    let detailsStream = fs.createReadStream(argv._[0]);
+    const detailsStream = fs.createReadStream(argv._[0]);
     detailsStream.pipe(details);
 }
 

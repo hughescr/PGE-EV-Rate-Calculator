@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = function(grunt)
 {
     require('load-grunt-tasks')(grunt);
@@ -7,7 +9,11 @@ module.exports = function(grunt)
             eslint:
             {
                 options: {},
-                target: ['.'],  // Use directories instead of wildcards (like *.js) or you will get a warning for every ignored file!
+                target: [  // Use directories instead of wildcards (like *.js) or you will get a warning for every ignored file!
+                    '.',
+                    'bin/pge-analyzer',
+                    'bin/pge-server',
+                ],
             },
         });
 

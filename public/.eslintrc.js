@@ -8,7 +8,14 @@ module.exports =
 
     env:
     {
-        es6: true,
+        es6: false,
         browser: true,
+    },
+
+    rules:
+    {
+        strict:                     'off',
+        'prefer-arrow-callback':    'off',
+        'no-var':                   'off',
     },
 };
