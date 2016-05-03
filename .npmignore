@@ -1,0 +1,8 @@
+.eslintignore
+**/.eslintrc.js
+.gitignore
+*.xml
+Gruntfile.js
+*.sublime-*
+
+test
