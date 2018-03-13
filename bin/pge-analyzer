@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 
-const pge_parse = require('../lib/pge-parse');
+const summaryParser = require('../lib/summary-parser');
+const intervalParser = require('../lib/interval-parser');
+
 const printf    = require('printf');
 const fs        = require('fs');
 const logger    = require('@hughescr/logger').logger;
+const _         = require('underscore');
+const columnify = require('columnify');
 
 const argv = require('optimist')
     .usage('Usage: $0 [-a] [-b <baseline territory>] [-m <miles_per_day>] [-c <Wh per mile>] <XML data filename>')
@@ -28,49 +32,60 @@ const argv = require('optimist')
     .wrap(80)
     .argv;
 
-const parser = pge_parse.PGEParser(
-                        argv.a,
-                        argv.b,
-                        argv.c,
-                        argv.m,
-                        argv.p ? new Date(argv.p) : undefined
-                    );
-
 function report(totals)
 {
-    // Print out report
-    for(const rate in totals)
+    _.forEach(totals, (data, rate) =>
     {
-        const data = totals[rate];
-        logger.info('Rate: ' + rate);
-        for(const period in data)
-        {
-            const sub_data = data[period];
-            logger.info(period +
-                '\tCost: $' + printf('%0.2f', sub_data.cost) +
-                '\t Per kWh: $' + printf('%0.2f', sub_data.cost / sub_data.amount) +
-                '\t Per day: $' + printf('%0.2f', sub_data.cost / sub_data.numDays)
-            );
-        }
-    }
+        logger.info(`Rate:  ${rate}`);
+
+        const collapsedData = _.chain(data)
+                            .groupBy((val, key) => key.split(' ')[0])
+                            .mapObject(arr => _.reduce(arr, (memo, e) => ({ cost: memo.cost + e.cost, amount: memo.amount + e.amount, numDays: memo.numDays > e.numDays ? memo.numDays : e.numDays })))
+                            .mapObject((val, key) =>
+                            {
+                                const costInDollars = val.cost    / (100 * 1000);
+                                const amountInkWh   = val.amount  / 1000;
+                                const amountInMWh   = amountInkWh / 1000;
+
+                                let usageString = printf('%0.2f', amountInkWh) + 'kWh';
+                                if(amountInkWh > 1000)
+                                {
+                                    usageString = printf('%0.2f', amountInMWh) + 'MWh';
+                                }
+
+                                return {
+                                    period: key,
+                                    usage: `Usage: ${usageString} / ${printf('%0.2f', amountInkWh / (val.numDays * 24))}kW`,
+                                    costInDollars: 'Cost: $' + printf('%0.2f', costInDollars),
+                                    perkWh: 'Per kWh: $' + printf('%0.2f', costInDollars / amountInkWh),
+                                    perDay: 'Per day: ' + printf('%0.2f', amountInkWh / val.numDays) + 'kWh / $' + printf('%0.2f', costInDollars / val.numDays),
+                                };
+                            })
+                            .values()
+                            .value();
+
+        columnify(collapsedData, { showHeaders: false, columnSplitter: '    ' }).split('\n').forEach(line => logger.info(line));
+    });
 }
 
-const details = parser.detailsParser(report);
+let summaryOrNoSummary;
 
 if(argv.S)
 {
-    const summaryParser = parser.summaryParser(() =>
-    {
-        const detailsStream = fs.createReadStream(argv._[0]);
-        detailsStream.pipe(details);
-    });
-
-    const summaryStream = fs.createReadStream(argv.S);
-    summaryStream.pipe(summaryParser);
+    summaryOrNoSummary = summaryParser(fs.createReadStream(argv.S));
 }
 else
 {
-    const detailsStream = fs.createReadStream(argv._[0]);
-    detailsStream.pipe(details);
+    summaryOrNoSummary = Promise.resolve([]);
 }
 
+summaryOrNoSummary
+.then(billing_periods =>
+{
+    return intervalParser(fs.createReadStream(argv._[0]), billing_periods, argv.a, argv.b);
+})
+.then(report)
+.catch(err =>
+{
+    logger.error('Error:', err.stack);
+});
