@@ -1,5 +1,4 @@
-$(document).ready(function()
-{
+$(document).ready(function() {
     $('#p').datepicker();
 
     // $('[data-toggle="tooltip"]').tooltip();
@@ -21,8 +20,7 @@ $(document).ready(function()
 
     $('form').ajaxForm(
     {
-        beforeSend: function()
-        {
+        beforeSend: function() {
             status.empty();
             var percentVal = '0%';
             progress.slideDown();
@@ -30,20 +28,17 @@ $(document).ready(function()
             bar.width(percentVal);
             percent.html(percentVal);
         },
-        uploadProgress: function(event, position, total, percentComplete)
-        {
+        uploadProgress: function(event, position, total, percentComplete) {
             var percentVal = percentComplete + '%';
             bar.width(percentVal);
             percent.html(percentVal);
         },
-        success: function()
-        {
+        success: function() {
             var percentVal = '100%';
             bar.width(percentVal);
             percent.html(percentVal);
         },
-        complete: function(xhr)
-        {
+        complete: function(xhr) {
             progress.slideUp();
             status.fadeIn();
             status.html(xhr.responseText);
