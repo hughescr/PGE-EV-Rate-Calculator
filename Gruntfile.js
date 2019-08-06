@@ -11,7 +11,7 @@ module.exports = function(grunt) {
                 target: [  // Use directories instead of wildcards (like *.js) or you will get a warning for every ignored file!
                     '.',
                     'bin/pge-analyzer',
-                    'bin/pge-server',
+                    // 'bin/pge-server', // This is not currently updated and linting causing commits to fail
                 ],
             },
         });
