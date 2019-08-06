@@ -32,24 +32,20 @@ const argv = require('optimist')
     .wrap(80)
     .argv;
 
-function report(totals)
-{
-    _.forEach(totals, (data, rate) =>
-    {
+function report(totals) {
+    _.forEach(totals, (data, rate) => {
         logger.info(`Rate:  ${rate}`);
 
         const collapsedData = _.chain(data)
                             .groupBy((val, key) => key.split(' ')[0])
                             .mapObject(arr => _.reduce(arr, (memo, e) => ({ cost: memo.cost + e.cost, amount: memo.amount + e.amount, numDays: memo.numDays > e.numDays ? memo.numDays : e.numDays })))
-                            .mapObject((val, key) =>
-                            {
+                            .mapObject((val, key) => {
                                 const costInDollars = val.cost    / (100 * 1000);
                                 const amountInkWh   = val.amount  / 1000;
                                 const amountInMWh   = amountInkWh / 1000;
 
                                 let usageString = printf('%0.2f', amountInkWh) + 'kWh';
-                                if(amountInkWh > 1000)
-                                {
+                                if(amountInkWh > 1000) {
                                     usageString = printf('%0.2f', amountInMWh) + 'MWh';
                                 }
 
@@ -70,22 +66,17 @@ function report(totals)
 
 let summaryOrNoSummary;
 
-if(argv.S)
-{
+if(argv.S) {
     summaryOrNoSummary = summaryParser(fs.createReadStream(argv.S));
-}
-else
-{
+} else {
     summaryOrNoSummary = Promise.resolve([]);
 }
 
 summaryOrNoSummary
-.then(billing_periods =>
-{
+.then(billing_periods => {
     return intervalParser(fs.createReadStream(argv._[0]), billing_periods, argv.a, argv.b);
 })
 .then(report)
-.catch(err =>
-{
+.catch(err => {
     logger.error('Error:', err.stack);
 });

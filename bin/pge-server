@@ -22,16 +22,13 @@ app.use(loggerMW);
 
 app.use(serveStatic(path.join(__dirname, '..', 'public')));
 
-function report(res, totals)
-{
+function report(res, totals) {
     let response = '<html><head><link rel="stylesheet" href="main.css"></link></head><body>';
     // Print out report
-    for(const rate in totals)
-    {
+    for(const rate in totals) {
         const data = totals[rate];
         response += '<div class="rate">Rate: ' + rate;
-        for(const period in data)
-        {
+        for(const period in data) {
             const sub_data = data[period];
             response += '<div class="subtotal">' + period +
             printf('<div class="cost">Cost: <span class="money">$%0.2f</span></div>', sub_data.cost) +
@@ -44,31 +41,26 @@ function report(res, totals)
     res.status(200).send(response);
 }
 
-app.post('/upload', (req, res) =>
-{
+app.post('/upload', (req, res) => {
     const form = new formidable.IncomingForm();
 
     const argv = {};
 
-    form.on('field', (name, value) =>
-    {
+    form.on('field', (name, value) => {
         argv[name] = value;
     });
 
     let parser = undefined;
 
-    form.onPart = function(part)
-    {
+    form.onPart = function(part) {
         // Part can be a form field, or a file
-        if(!part.filename)
-        {
+        if(!part.filename) {
             // let formidable handle all non-file parts
             form.handlePart(part);
             return;
         }
 
-        if(!parser)
-        {
+        if(!parser) {
             parser = pge_parse.PGEParser(
                 argv.a,
                 argv.b,
@@ -78,14 +70,12 @@ app.post('/upload', (req, res) =>
             );
         }
 
-        if(part.name == 'summary')
-        {
+        if(part.name == 'summary') {
             const summary = parser.summaryParser(() => {});
             part.pipe(summary);
         }
 
-        if(part.name == 'details')
-        {
+        if(part.name == 'details') {
             const details = parser.detailsParser(report.bind(null, res));
             part.pipe(details);
         }
